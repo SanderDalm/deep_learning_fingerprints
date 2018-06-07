@@ -1,12 +1,49 @@
 from scipy.misc import imread, imresize
 import numpy as np
+from glob import glob
 
 class BatchGenerator(object):
 
-    def __init__(self, file_list, imsize):
+    def __init__(self, path, task, imsize):
 
-        self.file_list = file_list
+
         self.imsize = imsize
+        if task == 'classification':
+            self.images, self.labels = self.parse_data_for_classification(path)
+        if task == 'matching':
+            self.parse_data_for_matching(path)
+
+
+    def parse_data_for_classification(self, path):
+
+
+        file_list = glob(path+'/*'+'/*')
+
+        ids = list(set([x[:-4].split('/')[-1] for x in file_list]))
+        ids.remove('Thumb')
+
+        images = []
+        labels = []
+
+        for id in ids:
+            print(id)
+            image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
+            label_path = [x for x in file_list if x.find(id) > -1 and x.endswith('txt')][0]
+
+            img = imread(image_path)
+            label_file = open(label_path)
+            for line in label_file.readlines():
+                if line.startswith('Class'):
+                    label = line[7]
+
+            images.append(img)
+            labels.append(label)
+
+        return images, labels
+
+
+    def parse_data_for_matching(self):
+        pass
 
     def generate_batch(self, batch_size):
 

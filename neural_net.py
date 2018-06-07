@@ -40,6 +40,7 @@ class NeuralNet(object):
         self.saver = tf.train.Saver(max_to_keep=None,
                                     name='checkpoint_saver')
 
+
     def Conv2D(self, x, filters, kernel_size, stride, padding='same'):
         return tf.layers.conv2d(inputs=x,
                                 filters=filters,
@@ -50,6 +51,7 @@ class NeuralNet(object):
                                 kernel_regularizer=tf.keras.regularizers.l2(l=0.01),
                                 activity_regularizer=tf.keras.regularizers.l2(l=0.01),
                                 padding=padding)
+
 
     def CNN(self, x):
 
@@ -66,6 +68,7 @@ class NeuralNet(object):
         x = tf.layers.max_pooling2d(x, 2, 2)
 
         return tf.layers.flatten(x)
+
 
     def train(self, num_steps, batch_size, dropout_rate, lr, decay, checkpoint='models/neural_net'):
 
