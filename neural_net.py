@@ -15,35 +15,25 @@ class NeuralNet(object):
 
         self.dropout_rate = tf.placeholder(tf.float32)
 
-        self.x_a, self.x_b = tf.split(self.x, [1, 1], axis=2)
+        self.anchor, self.pos, self.neg = tf.split(self.x, [1, 1, 1], axis=2)
 
         with tf.variable_scope('scope'):
-            self.output_a = self.CNN(self.input_a, self.keep_prob)
+            self.anchor = self.CNN(self.anchor, self.keep_prob)
 
         with tf.variable_scope('scope', reuse=True):
-            self.output_b = self.CNN(self.input_b, self.keep_prob)
+            self.pos = self.CNN(self.pos, self.keep_prob)
 
-        self.concat = tf.concat([self.output_a, self.output_b], axis=1)
+        with tf.variable_scope('scope', reuse=True):
+            self.neg = self.CNN(self.neg, self.keep_prob)
 
-        self.fc1 = tf.layers.dense(inputs=self.concat,
-                                   units=128,
-                                   activation=tf.nn.relu,
-                                   kernel_initializer=tf.keras.initializers.he_normal())
 
-        self.fc2 = tf.layers.dense(inputs=self.fc1,
-                                   units=128,
-                                   activation=tf.nn.relu,
-                                   kernel_initializer=tf.keras.initializers.he_normal())
+        self.anchor_minus_pos = tf.norm(tensor=self.anchor - self.pos, ord=2)
+        self.anchor_minus_neg = tf.norm(tensor=self.anchor - self.neg, ord=2)
 
-        self.output = tf.dense(inputs=self.fc2,
-                               units=1)
+        self.triplet_loss = tf.reduce_mean(tf.maximum(self.anchor_minus_pos - self.anchor_minus_neg + 0.2, 0))
 
-        self.output = tf.sigmoid(self.output)
-
-        self.labels = tf.placeholder(dtype=tf.float32, shape=[None, 1])
-        self.loss = tf.losses.log_loss(self.labels, self.output)
         self.optimizer = tf.train.AdamOptimizer()
-        self.train_step = self.optimizer.minimize(self.loss)
+        self.train_step = self.optimizer.minimize(self.triplet_loss)
 
         self.init_op = tf.global_variables_initializer()
         self.session.run(self.init_op)
@@ -63,19 +53,19 @@ class NeuralNet(object):
 
     def CNN(self, x):
 
-        x = self.Conv2D(x, 8, 3, 1)
+        x = self.Conv2D(x, 16, 3, 1)
         x = tf.layers.max_pooling2d(x, 2, 2)
 
-        x = self.Conv2D(x, 8, 3, 1)
+        x = self.Conv2D(x, 32, 3, 1)
         x = tf.layers.max_pooling2d(x, 2, 2)
 
-        x = self.Conv2D(x, 8, 3, 1)
+        x = self.Conv2D(x, 64, 3, 1)
         x = tf.layers.max_pooling2d(x, 2, 2)
 
-        x = self.Conv2D(x, 8, 3, 1)
+        x = self.Conv2D(x, 128, 3, 1)
         x = tf.layers.max_pooling2d(x, 2, 2)
 
-        return x
+        return tf.layers.flatten(x)
 
     def train(self, num_steps, batch_size, dropout_rate, lr, decay, checkpoint='models/neural_net'):
 
