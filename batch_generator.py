@@ -71,15 +71,17 @@ class BatchGenerator_Classification:
 
 class BatchGenerator_Matching:
 
-
     def __init__(self, path, imsize):
 
 
         self.imsize = imsize
         self.images, self.ids = self.parse_data(path)
         self.sample_ids = list(set([x[1:] for x in self.ids]))
-        self.cursor = 0
 
+        self.sample_ids_train = self.sample_ids[:1600]
+        self.sample_ids_val = self.sample_ids[1600:]
+
+        self.cursor = 0
 
     def parse_data(self, path):
 
@@ -99,7 +101,6 @@ class BatchGenerator_Matching:
             images.append(img)
 
         return images, ids
-
 
     def generate_triplet_batch(self, batch_size):
 
@@ -121,6 +122,38 @@ class BatchGenerator_Matching:
             neg_index = np.random.choice(neg_candidate_indices)
 
             triplet = np.concatenate([self.images[anchor_index], self.images[pos_index], self.images[neg_index]], axis=2)
+            batch.append(triplet)
+
+            self.cursor += 1
+            if self.cursor == len(self.sample_ids):
+                indices = list(range(len(self.sample_ids)))
+                np.random.shuffle(indices)
+                self.sample_ids = [self.sample_ids[x] for x in indices]
+                self.cursor = 0
+                print("Every day I'm shuffling")
+
+        return np.array(batch)
+
+    def generate_triple_batch_validation(self):
+
+        batch = []
+
+        for id in self.sample_ids_val:
+
+            if np.random.rand() < .5:
+                anchor_index = self.ids.index('f' + id)
+                pos_index = self.ids.index('s' + id)
+            else:
+                anchor_index = self.ids.index('s' + id)
+                pos_index = self.ids.index('f' + id)
+
+            neg_candidate_indices = list(range(len(self.ids_val)))
+            neg_candidate_indices.remove(anchor_index)
+            neg_candidate_indices.remove(pos_index)
+            neg_index = np.random.choice(neg_candidate_indices)
+
+            triplet = np.concatenate([self.images[anchor_index], self.images[pos_index], self.images[neg_index]],
+                                     axis=2)
             batch.append(triplet)
 
             self.cursor += 1

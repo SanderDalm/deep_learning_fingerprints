@@ -15,7 +15,7 @@ class NeuralNet_Matching:
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, height, width, 3], name='input')
-        self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
+        #self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
 
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
@@ -33,8 +33,9 @@ class NeuralNet_Matching:
         self.anchor_minus_pos = tf.norm(self.anchor_embedding - self.pos_embedding, axis=1)
         self.anchor_minus_neg = tf.norm(self.anchor_embedding - self.neg_embedding, axis=1)
 
+        self.triplet_loss = tf.reduce_mean(tf.maximum(self.anchor_minus_pos - self.anchor_minus_neg + 1, 0))
+        #self.triplet_loss = 1/tf.reduce_mean(tf.pow(self.anchor_minus_pos - self.anchor_minus_neg, 2)) # Alle loss
 
-        self.triplet_loss = tf.reduce_mean(tf.maximum(self.anchor_minus_pos - self.anchor_minus_neg + 0.2, 0))
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         self.train_step = self.optimizer.minimize(self.triplet_loss)

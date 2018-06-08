@@ -11,7 +11,7 @@ from batch_generator import BatchGenerator_Matching
 path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
 BATCH_SIZE = 32
-NUM_STEPS = 2000
+NUM_STEPS = 500
 
 
 ########################################
@@ -28,8 +28,8 @@ loss, val_acc = nn.train(num_steps=NUM_STEPS,
          lr=.0001,
          decay=1)
 
-plt.plot(loss, color='b')
-plt.plot(val_acc, color='b')
+plt.plot(loss, color='b', alpha=.7)
+plt.plot(val_acc, color='g', alpha=.7)
 
 
 ########################################
@@ -58,20 +58,20 @@ for triplet in batch:
     distances_same.append(embedding_distance_same)
     distances_diff.append(embedding_distance_diff)
 
-plt.hist(distances_same, color='g', alpha=.2)
-plt.hist(distances_diff, color='r', aplha=.2)
+plt.hist(distances_same, color='g', alpha=.4)
+plt.hist(distances_diff, color='r', alpha=.4)
 
 ########################################
-# Determine accuracy for threshold
+# Determine threshold for accuracy
 ########################################
 
-def match(image1, image2, threshold):
+def match(image1, image2, threshold=13):
 
     distance = nn.compute_embedding_distance(image1=image1,
                                   image2=image2,
                                   h=IMSIZE,
                                   w=IMSIZE)
-    if distance > threshold:
+    if distance < threshold:
         return 1
     else:
         return 0
@@ -87,8 +87,10 @@ for triplet in batch:
     pos = triplet[:, :, 1].reshape([512, 512, 1])
     neg = triplet[:, :, 2].reshape([512, 512, 1])
 
-    matches_pos.append(match(anchor, pos, XXX))
-    matches_neg.append(match(anchor, pos, XXX))
+    matches_pos.append(match(anchor, pos))
+    matches_neg.append(match(anchor, neg))
 
-print(np.mean(matches_pos))
-print(np.mean(matches_neg))
+sensitivity = np.mean(matches_pos)
+specificity = 1-np.mean(matches_neg)
+
+print((sensitivity+specificity)/2)
