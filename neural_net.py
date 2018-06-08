@@ -20,7 +20,7 @@ class NeuralNet_Matching:
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
-        self.anchor, self.pos, self.neg = tf.split(self.x_standardized, 3, axis=3)
+        self.anchor, self.pos, self.neg = tf.split(self.x, 3, axis=3)
 
         with tf.variable_scope('scope'):
             self.anchor_embedding = self.CNN(self.anchor, self.dropout_rate)

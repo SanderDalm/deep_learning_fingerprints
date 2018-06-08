@@ -11,7 +11,7 @@ from batch_generator import BatchGenerator_Matching
 path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
 BATCH_SIZE = 32
-NUM_STEPS = 500
+NUM_STEPS = 1000
 
 
 ########################################
