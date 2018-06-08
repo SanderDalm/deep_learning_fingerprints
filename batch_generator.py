@@ -120,7 +120,8 @@ class BatchGenerator_Matching:
             neg_candidate_indices.remove(pos_index)
             neg_index = np.random.choice(neg_candidate_indices)
 
-            batch.append(np.concatenate([self.images[anchor_index], self.images[pos_index], self.images[neg_index]], axis=2))
+            triplet = np.concatenate([self.images[anchor_index], self.images[pos_index], self.images[neg_index]], axis=2)
+            batch.append(triplet)
 
             self.cursor += 1
             if self.cursor == len(self.sample_ids):
@@ -130,4 +131,4 @@ class BatchGenerator_Matching:
                 self.cursor = 0
                 print("Every day I'm shuffling")
 
-        return batch
+        return np.array(batch)

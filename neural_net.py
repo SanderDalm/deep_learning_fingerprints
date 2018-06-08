@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 class NeuralNet_Classification:
     pass
@@ -111,3 +112,18 @@ class NeuralNet_Matching:
                 print('Saved to {}'.format(checkpoint + str(step) + '.ckpt'))
 
         return loss_list, val_loss_list
+
+
+    def compute_embedding_distance(self, image1, image2, h, w):
+
+        x = np.concatenate([image1, image2, image2], axis=2) # The second image2 is a placeholder because the network expects triplets
+        x = x.reshape([1, h, w, 3])
+
+        feed_dict = {
+            self.x: x,
+            self.dropout_rate: 0
+                    }
+        embedding_distance = self.session.run([self.anchor_minus_pos],
+                         feed_dict=feed_dict)
+
+        return embedding_distance[0][0]

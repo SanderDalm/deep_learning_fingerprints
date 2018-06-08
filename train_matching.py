@@ -4,22 +4,22 @@ import matplotlib.pyplot as plt
 from neural_net import NeuralNet_Matching
 from batch_generator import BatchGenerator_Matching
 
-#####################################
-# Globals
-#####################################
+########################################
+# Set globals
+########################################
 
 path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
 BATCH_SIZE = 32
-NUM_STEPS = 2500
+NUM_STEPS = 2000
 
-# Get batch gen
+
+########################################
+# Train model
+########################################
+
 bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
 
-#x = bg.generate_triplet_batch(32)
-#x[0].shape
-
-# Train
 nn = NeuralNet_Matching(height=IMSIZE, width=IMSIZE, batchgen=bg)
 
 loss, val_acc = nn.train(num_steps=NUM_STEPS,
@@ -30,3 +30,65 @@ loss, val_acc = nn.train(num_steps=NUM_STEPS,
 
 plt.plot(loss, color='b')
 plt.plot(val_acc, color='b')
+
+
+########################################
+# Determine matching threshold
+########################################
+
+batch = bg.generate_triplet_batch(2000)
+
+distances_same = []
+distances_diff = []
+
+for triplet in batch:
+
+    anchor = triplet[:, :, 0].reshape([512, 512, 1])
+    pos = triplet[:, :, 1].reshape([512, 512, 1])
+    neg = triplet[:, :, 2].reshape([512, 512, 1])
+
+    embedding_distance_same = nn.compute_embedding_distance(image1=anchor,
+                                                       image2=pos,
+                                                       h=IMSIZE,
+                                                       w=IMSIZE)
+    embedding_distance_diff = nn.compute_embedding_distance(image1=anchor,
+                                                            image2=neg,
+                                                            h=IMSIZE,
+                                                            w=IMSIZE)
+    distances_same.append(embedding_distance_same)
+    distances_diff.append(embedding_distance_diff)
+
+plt.hist(distances_same, color='g', alpha=.2)
+plt.hist(distances_diff, color='r', aplha=.2)
+
+########################################
+# Determine accuracy for threshold
+########################################
+
+def match(image1, image2, threshold):
+
+    distance = nn.compute_embedding_distance(image1=image1,
+                                  image2=image2,
+                                  h=IMSIZE,
+                                  w=IMSIZE)
+    if distance > threshold:
+        return 1
+    else:
+        return 0
+
+batch = bg.generate_triplet_batch(2000)
+
+matches_pos = []
+matches_neg = []
+
+for triplet in batch:
+
+    anchor = triplet[:, :, 0].reshape([512, 512, 1])
+    pos = triplet[:, :, 1].reshape([512, 512, 1])
+    neg = triplet[:, :, 2].reshape([512, 512, 1])
+
+    matches_pos.append(match(anchor, pos, XXX))
+    matches_neg.append(match(anchor, pos, XXX))
+
+print(np.mean(matches_pos))
+print(np.mean(matches_neg))
