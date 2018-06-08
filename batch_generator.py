@@ -98,6 +98,7 @@ class BatchGenerator_Matching:
 
             img = imread(image_path)
             img = img.reshape([self.imsize, self.imsize, 1])
+            img = img / 255
             images.append(img)
 
         return images, ids
@@ -133,6 +134,7 @@ class BatchGenerator_Matching:
                 print("Every day I'm shuffling")
 
         return np.array(batch)
+
 
     def generate_triple_batch_validation(self):
 
