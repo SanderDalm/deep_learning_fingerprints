@@ -95,12 +95,13 @@ class BatchGenerator_Matching:
             image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
 
             img = imread(image_path)
+            img = img.reshape([self.imsize, self.imsize, 1])
             images.append(img)
 
         return images, ids
 
 
-    def generate__triplet_batch(self, batch_size):
+    def generate_triplet_batch(self, batch_size):
 
         batch = []
 
@@ -119,7 +120,7 @@ class BatchGenerator_Matching:
             neg_candidate_indices.remove(pos_index)
             neg_index = np.random.choice(neg_candidate_indices)
 
-            batch.append([self.images[anchor_index], self.images[pos_index], self.images[neg_index]])
+            batch.append(np.concatenate([self.images[anchor_index], self.images[pos_index], self.images[neg_index]], axis=2))
 
             self.cursor += 1
             if self.cursor == len(self.sample_ids):
