@@ -22,7 +22,7 @@ bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
 # Train
 nn = NeuralNet_Matching(height=IMSIZE, width=IMSIZE, batchgen=bg)
 
-nn.train(num_steps=NUM_STEPS,
+loss, val_loss = nn.train(num_steps=NUM_STEPS,
          batch_size=BATCH_SIZE,
          dropout_rate=0,
          lr=.0001,

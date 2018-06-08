@@ -14,25 +14,24 @@ class NeuralNet_Matching:
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, height, width, 3], name='input')
-        self.x = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
+        self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
 
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
-        self.anchor, self.pos, self.neg = tf.split(self.x, 3, axis=3)
+        self.anchor, self.pos, self.neg = tf.split(self.x_standardized, 3, axis=3)
 
         with tf.variable_scope('scope'):
-            self.anchor = self.CNN(self.anchor, self.dropout_rate)
-
+            self.anchor_embedding = self.CNN(self.anchor, self.dropout_rate)
         with tf.variable_scope('scope', reuse=True):
-            self.pos = self.CNN(self.pos, self.dropout_rate)
-
+            self.pos_embedding = self.CNN(self.pos, self.dropout_rate)
         with tf.variable_scope('scope', reuse=True):
-            self.neg = self.CNN(self.neg, self.dropout_rate)
+            self.neg_embedding = self.CNN(self.neg, self.dropout_rate)
 
 
-        self.anchor_minus_pos = tf.norm(tensor=self.anchor - self.pos, ord=2)
-        self.anchor_minus_neg = tf.norm(tensor=self.anchor - self.neg, ord=2)
+        self.anchor_minus_pos = tf.norm(self.anchor_embedding - self.pos_embedding, axis=1)
+        self.anchor_minus_neg = tf.norm(self.anchor_embedding - self.neg_embedding, axis=1)
+
 
         self.triplet_loss = tf.reduce_mean(tf.maximum(self.anchor_minus_pos - self.anchor_minus_neg + 0.2, 0))
 
@@ -89,11 +88,11 @@ class NeuralNet_Matching:
                 self.lr: lr
             }
 
-            loss_, _ = self.session.run([self.triplet_loss, self.train_step], feed_dict=feed_dict)
+            anch_emb, anch_min_pos, loss_, _ = self.session.run([self.anchor_embedding, self.anchor_minus_pos, self.triplet_loss, self.train_step], feed_dict=feed_dict)
             lr *= decay
 
             if step % 100 == 0:
-                x_batch = self.batchgen.generate_val_data()
+                x_batch = self.batchgen.generate_triplet_batch(32)
                 feed_dict = {
                     self.x: x_batch,
                     self.dropout_rate: 0

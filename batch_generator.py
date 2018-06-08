@@ -130,5 +130,4 @@ class BatchGenerator_Matching:
                 self.cursor = 0
                 print("Every day I'm shuffling")
 
-
         return batch
