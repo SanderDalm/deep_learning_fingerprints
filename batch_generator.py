@@ -1,23 +1,23 @@
+from tqdm import tqdm
 from scipy.misc import imread, imresize
 import numpy as np
 from glob import glob
 
-class BatchGenerator(object):
 
-    def __init__(self, path, task, imsize):
+class BatchGenerator_Classification:
 
+
+    def __init__(self, path, imsize):
 
         self.imsize = imsize
-        if task == 'classification':
-            self.images, self.labels = self.parse_data_for_classification(path)
-        if task == 'matching':
-            self.parse_data_for_matching(path)
+        self.images, self.labels = self.parse_data(path)
+        self.cursor = 0
 
 
-    def parse_data_for_classification(self, path):
+    def parse_data(self, path):
 
 
-        file_list = glob(path+'/*'+'/*')
+        file_list = glob(path + '/*' + '/*')
 
         ids = list(set([x[:-4].split('/')[-1] for x in file_list]))
         ids.remove('Thumb')
@@ -25,8 +25,7 @@ class BatchGenerator(object):
         images = []
         labels = []
 
-        for id in ids:
-            print(id)
+        for id in tqdm(ids):
             image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
             label_path = [x for x in file_list if x.find(id) > -1 and x.endswith('txt')][0]
 
@@ -39,11 +38,15 @@ class BatchGenerator(object):
             images.append(img)
             labels.append(label)
 
-        return images, labels
+        # Tokenize labels
+        tokens = list(range(len(set(labels))))
+        self.label_dict = {key: value for key, value in zip(set(labels), tokens)}
+        labels_tokenized = [self.label_dict[x] for x in labels]
+        n_values = np.max(tokens) + 1
+        labels_one_hot = np.eye(n_values)[labels_tokenized]
 
+        return images, labels_one_hot
 
-    def parse_data_for_matching(self):
-        pass
 
     def generate_batch(self, batch_size):
 
@@ -52,80 +55,79 @@ class BatchGenerator(object):
 
         for _ in range(batch_size):
 
-            filename = np.random.choice(self.file_list)
-            img = imread(filename)
-            img = imresize(img, [self.imsize, self.imsize])
-            img = img.reshape([self.imsize, self.imsize, 3])
-            img = img.astype(np.float32)
-            img = img/255.0
+            x_batch.append(self.images[self.cursor])
+            y_batch.append(self.labels[self.cursor])
+            self.cursor += 1
+            if self.cursor == len(self.images):
+                indices = list(range(len(self.images)))
+                np.random.shuffle(indices)
+                self.images = [self.images[x] for x in indices]
+                self.labels = [self.labels[x] for x in indices]
+                self.cursor = 0
+                print("Every day I'm shuffling")
 
-            if 'dog' in filename:
-                y_batch.append([1, 0])
+        return np.array(x_batch), np.array(y_batch)
+
+
+class BatchGenerator_Matching:
+
+
+    def __init__(self, path, imsize):
+
+
+        self.imsize = imsize
+        self.images, self.ids = self.parse_data(path)
+        self.sample_ids = list(set([x[1:] for x in self.ids]))
+        self.cursor = 0
+
+
+    def parse_data(self, path):
+
+
+        file_list = glob(path+'/*'+'/*')
+
+        ids = list(set([x[:-4].split('/')[-1] for x in file_list]))
+        ids.remove('Thumb')
+
+        images = []
+
+        for id in tqdm(ids):
+            image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
+
+            img = imread(image_path)
+            images.append(img)
+
+        return images, ids
+
+
+    def generate__triplet_batch(self, batch_size):
+
+        batch = []
+
+        for _ in range(batch_size):
+
+            selected_id = self.sample_ids[self.cursor]
+            if np.random.rand() < .5:
+                anchor_index = self.ids.index('f' + selected_id)
+                pos_index = self.ids.index('s' + selected_id)
             else:
-                y_batch.append([0, 1])
+                anchor_index = self.ids.index('s' + selected_id)
+                pos_index = self.ids.index('f' + selected_id)
 
-            x_batch.append(img)
+            neg_candidate_indices = list(range(len(self.ids)))
+            neg_candidate_indices.remove(anchor_index)
+            neg_candidate_indices.remove(pos_index)
+            neg_index = np.random.choice(neg_candidate_indices)
 
-        return np.array(x_batch), np.array(y_batch).reshape([batch_size, 2])
+            batch.append([self.images[anchor_index], self.images[pos_index], self.images[neg_index]])
 
-
-    def create_fake_data(self):
-
-        y_pos = np.ones((DATA_SIZE, 1))
-        y_neg = np.zeros((DATA_SIZE, 1))
-
-        def get_sequence(change):
-
-            if change:
-                x = np.linspace(0, 5, SEQUENCE_LENGTH) + np.random.normal(0, 5, [SEQUENCE_LENGTH])
-            else:
-                x = np.linspace(5, 0, SEQUENCE_LENGTH) + np.random.normal(0, 5, [SEQUENCE_LENGTH])
-
-            return x.reshape([x.shape[0], 1])
-
-        x_pos_list = []
-        x_neg_list = []
-
-        for i in range(DATA_SIZE):
-
-            randnum = np.random.random()
-
-            if randnum < .5:
-                x_pos = np.concatenate([get_sequence(True), get_sequence(True)], axis=1)
-                x_neg = np.concatenate([get_sequence(True), get_sequence(False)], axis=1)
-            else:
-                x_pos = np.concatenate([get_sequence(False), get_sequence(False)], axis=1)
-                x_neg = np.concatenate([get_sequence(False), get_sequence(True)], axis=1)
-
-            x_pos_list.append(x_pos)
-            x_neg_list.append(x_neg)
-
-        x_pos = np.concatenate([x_pos_list])
-        x_neg = np.concatenate([x_neg_list])
-
-        x_pos_train = x_pos[:80000]
-        x_pos_test = x_pos[80000:]
-        x_neg_train = x_neg[:80000]
-        x_neg_test = x_neg[80000:]
-
-        y_pos_train = y_pos[:80000]
-        y_pos_test = y_pos[80000:]
-        y_neg_train = y_neg[:80000]
-        y_neg_test = y_neg[80000:]
+            self.cursor += 1
+            if self.cursor == len(self.sample_ids):
+                indices = list(range(len(self.sample_ids)))
+                np.random.shuffle(indices)
+                self.sample_ids = [self.sample_ids[x] for x in indices]
+                self.cursor = 0
+                print("Every day I'm shuffling")
 
 
-        def generate_batch(x_pos, y_pos, x_neg, y_neg):
-
-            sample = np.random.choice(range(len(x_pos)), BATCH_SIZE//2)
-
-            batch_x = np.concatenate([x_pos[sample], x_neg[sample]], axis=0)
-            batch_y = np.concatenate([y_pos[sample], y_neg[sample]], axis=0)
-
-            return batch_x, batch_y
-
-        plt.plot(x_pos[1])
-        plt.savefig('pos.png')
-        plt.clf()
-        plt.plot(x_neg[1])
-        plt.savefig('neg.png')
-        plt.clf()
+        return batch
