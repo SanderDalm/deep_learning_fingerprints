@@ -136,7 +136,7 @@ class BatchGenerator_Matching:
         return np.array(batch)
 
 
-    def generate_triple_batch_validation(self):
+    def generate_triplet_batch_validation(self):
 
         batch = []
 
