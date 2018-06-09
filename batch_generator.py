@@ -136,11 +136,11 @@ class BatchGenerator_Matching:
         return np.array(batch)
 
 
-    def generate_triplet_batch_validation(self):
+    def generate_triplet_batch_validation(self, limit=-1):
 
         batch = []
 
-        for id in self.sample_ids_val:
+        for id in self.sample_ids_val[:limit]:
 
             if np.random.rand() < .5:
                 anchor_index = self.ids.index('f' + id)

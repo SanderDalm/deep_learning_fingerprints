@@ -94,7 +94,7 @@ class NeuralNet_Matching:
             lr *= decay
 
             if step % 100 == 0:
-                x_batch = self.batchgen.generate_triplet_batch_validation()
+                x_batch = self.batchgen.generate_triplet_batch_validation(limit=32)
                 feed_dict = {
                     self.x: x_batch,
                     self.dropout_rate: 0
