@@ -36,7 +36,7 @@ plt.plot(val_acc, color='g', alpha=.7)
 # Determine matching threshold
 ########################################
 
-batch = bg.generate_triplet_batch(2000)
+batch = bg.generate_triplet_batch_validation()
 
 distances_same = []
 distances_diff = []
@@ -65,7 +65,7 @@ plt.hist(distances_diff, color='r', alpha=.4)
 # Determine threshold for accuracy
 ########################################
 
-def match(image1, image2, threshold=13):
+def match(image1, image2, threshold=5):
 
     distance = nn.compute_embedding_distance(image1=image1,
                                   image2=image2,
@@ -76,7 +76,7 @@ def match(image1, image2, threshold=13):
     else:
         return 0
 
-batch = bg.generate_triplet_batch(2000)
+batch = bg.generate_triplet_batch_validation()
 
 matches_pos = []
 matches_neg = []

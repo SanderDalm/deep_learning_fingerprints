@@ -149,7 +149,7 @@ class BatchGenerator_Matching:
                 anchor_index = self.ids.index('s' + id)
                 pos_index = self.ids.index('f' + id)
 
-            neg_candidate_indices = list(range(len(self.ids_val)))
+            neg_candidate_indices = list(range(len(self.ids)))
             neg_candidate_indices.remove(anchor_index)
             neg_candidate_indices.remove(pos_index)
             neg_index = np.random.choice(neg_candidate_indices)
