@@ -26,7 +26,7 @@ loss, val_acc = nn.train(num_steps=NUM_STEPS,
          batch_size=BATCH_SIZE,
          dropout_rate=0,
          lr=.0001,
-         decay=1)
+         decay=.997)
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_acc, color='g', alpha=.7)
@@ -60,12 +60,20 @@ for triplet in batch:
 
 plt.hist(distances_same, color='g', alpha=.4)
 plt.hist(distances_diff, color='r', alpha=.4)
+plt.show()
+
+# LRs
+hist_pos, bins = np.histogram(distances_same)
+hist_neg = np.histogram(distances_diff, bins=bins)[0]
+
+for index, value in enumerate(hist_pos):
+    print(hist_neg[index]/value)
 
 ########################################
 # Determine threshold for accuracy
 ########################################
 
-def match(image1, image2, threshold=5):
+def match(image1, image2, threshold=11):
 
     distance = nn.compute_embedding_distance(image1=image1,
                                   image2=image2,
