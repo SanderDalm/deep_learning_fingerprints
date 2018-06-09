@@ -158,12 +158,5 @@ class BatchGenerator_Matching:
                                      axis=2)
             batch.append(triplet)
 
-            self.cursor += 1
-            if self.cursor == len(self.sample_ids):
-                indices = list(range(len(self.sample_ids)))
-                np.random.shuffle(indices)
-                self.sample_ids = [self.sample_ids[x] for x in indices]
-                self.cursor = 0
-                print("Every day I'm shuffling")
 
         return np.array(batch)
