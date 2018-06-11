@@ -140,28 +140,17 @@ class BatchGenerator_Matching:
 
             anchor_id = np.random.choice(candidate_ids)
 
-            anchor_index_f = self.ids.index('f' + anchor_id)
-            anchor_index_s = self.ids.index('s' + anchor_id)
+            anchor_index = self.ids.index('f' + anchor_id)
+            partner_index = self.ids.index('s' + anchor_id)
 
-            randnum = np.random.rand()
-            if randnum < .5:
-                anchor_letter = 'f'
-                anchor_index = anchor_index_f
-            else:
-                anchor_letter = 's'
-                anchor_index = anchor_index_s
-
-
+            # pos case
             if np.random.rand() < .5:
-                # pos case
-                if anchor_letter == 'f':
-                    partner_index = anchor_index_s
-                if anchor_letter == 's':
-                    partner_index = anchor_index_f
+                if np.random.rand() < .5:
+                    anchor_index, partner_index = partner_index, anchor_index
                 label = 1
 
+            # neg case
             else:
-                # neg case
                 neg_candidate_ids = ['f' + x for x in candidate_ids if x != anchor_id] + ['s' + x for x in
                                                                                           candidate_ids if
                                                                                                 x != anchor_id]
