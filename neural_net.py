@@ -6,7 +6,9 @@ class NeuralNet_Classification:
 
 class NeuralNet_Matching:
 
-    def __init__(self, height, width, batchgen):
+    def __init__(self, height, width, batchgen, network_type='triplet'):
+
+        self.network_type = network_type
 
         self.batchgen = batchgen
 
@@ -30,20 +32,38 @@ class NeuralNet_Matching:
             self.neg_embedding = self.CNN(self.neg, self.dropout_rate)
 
 
-        self.anchor_minus_pos = tf.norm(self.anchor_embedding - self.pos_embedding, axis=1)
-        self.anchor_minus_neg = tf.norm(self.anchor_embedding - self.neg_embedding, axis=1)
+        if self.network_type == 'triplet':
+            self.anchor_minus_pos = tf.norm(self.anchor_embedding - self.pos_embedding, axis=1)
+            self.anchor_minus_neg = tf.norm(self.anchor_embedding - self.neg_embedding, axis=1)
+            self.loss = tf.reduce_mean(tf.maximum(self.anchor_minus_pos - self.anchor_minus_neg + 1, 0))
 
-        self.triplet_loss = tf.reduce_mean(tf.maximum(self.anchor_minus_pos - self.anchor_minus_neg + 1, 0))
-        #self.triplet_loss = 1/tf.reduce_mean(tf.pow(self.anchor_minus_pos - self.anchor_minus_neg, 2)) # Alle loss
+        if self.network_type == 'duos':
+            self.concat = tf.concat([self.anchor_embedding, self.pos_embedding], axis=1)
+            self.fc1 = self.Dense(self.concat, 256, tf.nn.relu)
+            self.fc2 = self.Dense(self.fc1, 256, tf.nn.relu)
+            self.prediction = self.Dense(self.fc2, 2, tf.nn.sigmoid)
+            self.label = tf.placeholder(tf.int32, [None, 2])
+            self.loss = tf.losses.softmax_cross_entropy(onehot_labels=self.label,
+                                                        logits=self.prediction)
 
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
-        self.train_step = self.optimizer.minimize(self.triplet_loss)
+        self.train_step = self.optimizer.minimize(self.loss)
 
         self.init_op = tf.global_variables_initializer()
         self.session.run(self.init_op)
         self.saver = tf.train.Saver(max_to_keep=None,
                                     name='checkpoint_saver')
+
+
+    def Dense(self, x, units, activation):
+
+        return tf.layers.dense(inputs=x,
+                               units=units,
+                               activation=activation,
+                               kernel_initializer=tf.keras.initializers.he_normal(),
+                               kernel_regularizer=tf.keras.regularizers.l2(l=0.01),
+                               activity_regularizer=tf.keras.regularizers.l2(l=0.01))
 
 
     def Conv2D(self, x, filters, kernel_size, stride, padding='same'):
@@ -82,24 +102,42 @@ class NeuralNet_Matching:
 
         for step in range(num_steps):
 
-            x_batch = self.batchgen.generate_triplet_batch(batch_size)
+            if self.network_type == 'triplet':
+                x_batch = self.batchgen.generate_train_triplets(batch_size)
+                feed_dict = {
+                            self.x: x_batch,
+                            self.dropout_rate: dropout_rate,
+                            self.lr: lr
+                            }
+            if self.network_type == 'duos':
+                x_batch, y_batch = self.batchgen.generate_train_duos(batch_size)
+                feed_dict = {
+                            self.x: x_batch,
+                            self.label: y_batch,
+                            self.dropout_rate: dropout_rate,
+                            self.lr: lr
+                            }
 
-            feed_dict = {
-                self.x: x_batch,
-                self.dropout_rate: dropout_rate,
-                self.lr: lr
-            }
 
-            anch_emb, anch_min_pos, loss_, _ = self.session.run([self.anchor_embedding, self.anchor_minus_pos, self.triplet_loss, self.train_step], feed_dict=feed_dict)
+            loss_, _ = self.session.run([self.loss, self.train_step], feed_dict=feed_dict)
             lr *= decay
 
             if step % 100 == 0:
-                x_batch = self.batchgen.generate_triplet_batch_validation(limit=32)
-                feed_dict = {
-                    self.x: x_batch,
-                    self.dropout_rate: 0
-                }
-                val_loss = self.session.run([self.triplet_loss], feed_dict=feed_dict)
+                if self.network_type == 'triplet':
+                    x_batch = self.batchgen.generate_val_triplets(batch_size)
+                    feed_dict = {
+                                self.x: x_batch,
+                                self.dropout_rate: 0
+                                }
+                if self.network_type == 'duos':
+                    x_batch, y_batch = self.batchgen.generate_val_duos(batch_size)
+                    feed_dict = {
+                        self.x: x_batch,
+                        self.label: y_batch,
+                        self.dropout_rate: dropout_rate,
+                        self.lr: lr
+                    }
+                val_loss = self.session.run([self.loss], feed_dict=feed_dict)
                 val_loss_list.append(val_loss)
                 loss_list.append(loss_)
                 print('step: {}'.format(step))

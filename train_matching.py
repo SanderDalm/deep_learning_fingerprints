@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from neural_net import NeuralNet_Matching
-from batch_generator import BatchGenerator_Matching
+from batch_generators import BatchGenerator_Matching
 
 ########################################
 # Set globals
@@ -20,17 +20,24 @@ NUM_STEPS = 1000
 
 bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
 
-nn = NeuralNet_Matching(height=IMSIZE, width=IMSIZE, batchgen=bg)
+
+#x, y = bg.generate_val_duos(32)
+#index=-7
+#y[index]
+#plt.imshow(np.concatenate([x[index, :, :, 0], x[index, :, :, 1]], axis=0))
+#plt.show()
+
+nn = NeuralNet_Matching(height=IMSIZE, width=IMSIZE, batchgen=bg, network_type='duos')
 
 loss, val_acc = nn.train(num_steps=NUM_STEPS,
          batch_size=BATCH_SIZE,
          dropout_rate=0,
          lr=.0001,
-         decay=.997)
+         decay=1)
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_acc, color='g', alpha=.7)
-
+plt.show()
 
 ########################################
 # Determine matching threshold
@@ -73,7 +80,7 @@ for index, value in enumerate(hist_pos):
 # Determine threshold for accuracy
 ########################################
 
-def match(image1, image2, threshold=11):
+def match(image1, image2, threshold=10):
 
     distance = nn.compute_embedding_distance(image1=image1,
                                   image2=image2,

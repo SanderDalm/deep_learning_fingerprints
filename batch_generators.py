@@ -81,7 +81,6 @@ class BatchGenerator_Matching:
         self.sample_ids_train = self.sample_ids[:1600]
         self.sample_ids_val = self.sample_ids[1600:]
 
-        self.cursor = 0
 
     def parse_data(self, path):
 
@@ -103,60 +102,91 @@ class BatchGenerator_Matching:
 
         return images, ids
 
-    def generate_triplet_batch(self, batch_size):
+
+    def generate_triplet_batch(self, batch_size, candidate_ids):
 
         batch = []
 
         for _ in range(batch_size):
 
-            selected_id = self.sample_ids[self.cursor]
+            anchor_id = np.random.choice(candidate_ids)
             if np.random.rand() < .5:
-                anchor_index = self.ids.index('f' + selected_id)
-                pos_index = self.ids.index('s' + selected_id)
+                anchor_index = self.ids.index('f' + anchor_id)
+                pos_index = self.ids.index('s' + anchor_id)
             else:
-                anchor_index = self.ids.index('s' + selected_id)
-                pos_index = self.ids.index('f' + selected_id)
+                anchor_index = self.ids.index('s' + anchor_id)
+                pos_index = self.ids.index('f' + anchor_id)
 
-            neg_candidate_indices = list(range(len(self.ids)))
-            neg_candidate_indices.remove(anchor_index)
-            neg_candidate_indices.remove(pos_index)
-            neg_index = np.random.choice(neg_candidate_indices)
+            neg_candidate_ids = ['f' + x for x in candidate_ids if x != anchor_id]+['s' + x for x in candidate_ids if x != anchor_id]
+            neg_id = np.random.choice(neg_candidate_ids)
+            neg_index = self.ids.index(neg_id)
 
             triplet = np.concatenate([self.images[anchor_index], self.images[pos_index], self.images[neg_index]], axis=2)
             batch.append(triplet)
 
-            self.cursor += 1
-            if self.cursor == len(self.sample_ids):
-                indices = list(range(len(self.sample_ids)))
-                np.random.shuffle(indices)
-                self.sample_ids = [self.sample_ids[x] for x in indices]
-                self.cursor = 0
-                print("Every day I'm shuffling")
-
         return np.array(batch)
 
 
-    def generate_triplet_batch_validation(self, limit=-1):
+    def generate_duo_batch_with_labels(self, batch_size, candidate_ids):
 
-        batch = []
+        x_batch = []
+        y_batch = []
 
-        for id in self.sample_ids_val[:limit]:
+        for _ in range(batch_size):
+
+            anchor_id = np.random.choice(candidate_ids)
+
+            anchor_index_f = self.ids.index('f' + anchor_id)
+            anchor_index_s = self.ids.index('s' + anchor_id)
+
+            randnum = np.random.rand()
+            if randnum < .5:
+                anchor_letter = 'f'
+                anchor_index = anchor_index_f
+            else:
+                anchor_letter = 's'
+                anchor_index = anchor_index_s
+
 
             if np.random.rand() < .5:
-                anchor_index = self.ids.index('f' + id)
-                pos_index = self.ids.index('s' + id)
+                # pos case
+                if anchor_letter == 'f':
+                    partner_index = anchor_index_s
+                if anchor_letter == 's':
+                    partner_index = anchor_index_f
+                label = [1, 0]
+
             else:
-                anchor_index = self.ids.index('s' + id)
-                pos_index = self.ids.index('f' + id)
+                # neg case
+                neg_candidate_ids = ['f' + x for x in candidate_ids if x != anchor_id] + ['s' + x for x in
+                                                                                          candidate_ids if
+                                                                                                x != anchor_id]
+                neg_id = np.random.choice(neg_candidate_ids)
+                partner_index = self.ids.index(neg_id)
+                label = [0, 1]
 
-            neg_candidate_indices = list(range(len(self.ids)))
-            neg_candidate_indices.remove(anchor_index)
-            neg_candidate_indices.remove(pos_index)
-            neg_index = np.random.choice(neg_candidate_indices)
 
-            triplet = np.concatenate([self.images[anchor_index], self.images[pos_index], self.images[neg_index]],
+            duo = np.concatenate([self.images[anchor_index], self.images[partner_index], self.images[partner_index]],
                                      axis=2)
-            batch.append(triplet)
+
+            x_batch.append(duo)
+            y_batch.append(label)
+
+        return np.array(x_batch), np.array(y_batch)
 
 
-        return np.array(batch)
+    def generate_train_triplets(self, batch_size):
+
+        return self.generate_triplet_batch(batch_size, self.sample_ids_train)
+
+    def generate_val_triplets(self, batch_size):
+
+        return self.generate_triplet_batch(batch_size, self.sample_ids_val)
+
+    def generate_train_duos(self, batch_size):
+
+        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_train)
+
+    def generate_val_duos(self, batch_size):
+
+        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_val)
