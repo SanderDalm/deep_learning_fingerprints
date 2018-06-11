@@ -11,7 +11,8 @@ class BatchGenerator_Classification:
 
         self.imsize = imsize
         self.images, self.labels = self.parse_data(path)
-        self.cursor = 0
+        self.images_train, self.labels_train = self.images[:1600], self.labels[:1600]
+        self.images_val, self.labels_val = self.images[1600:], self.labels[1600:]
 
 
     def parse_data(self, path):
@@ -48,25 +49,29 @@ class BatchGenerator_Classification:
         return images, labels_one_hot
 
 
-    def generate_batch(self, batch_size):
+    def generate_batch(self, batch_size, images, labels):
 
         x_batch = []
         y_batch = []
 
         for _ in range(batch_size):
 
-            x_batch.append(self.images[self.cursor])
-            y_batch.append(self.labels[self.cursor])
-            self.cursor += 1
-            if self.cursor == len(self.images):
-                indices = list(range(len(self.images)))
-                np.random.shuffle(indices)
-                self.images = [self.images[x] for x in indices]
-                self.labels = [self.labels[x] for x in indices]
-                self.cursor = 0
-                print("Every day I'm shuffling")
+            index = np.random.choice(range(len(images)))
+            x_batch.append(images[index])
+            y_batch.append(labels[index])
 
-        return np.array(x_batch), np.array(y_batch)
+        return np.array(x_batch).reshape(batch_size, self.imsize, self.imsize, 1), np.array(y_batch)
+
+
+    def generate_train_batch(self, batch_size):
+
+        return self.generate_batch(batch_size, self.images_train, self.labels_train)
+
+
+    def generate_val_batch(self, batch_size):
+
+        return self.generate_batch(batch_size, self.images_val, self.labels_val)
+
 
 
 class BatchGenerator_Matching:

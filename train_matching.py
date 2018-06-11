@@ -11,7 +11,7 @@ from batch_generators import BatchGenerator_Matching
 path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
 BATCH_SIZE = 32
-NUM_STEPS = 1001
+NUM_STEPS = 101
 
 
 ########################################
@@ -27,9 +27,9 @@ bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
 #plt.imshow(np.concatenate([x[index, :, :, 0], x[index, :, :, 1]], axis=0))
 #plt.show()
 
-nn = NeuralNet_Matching(height=IMSIZE, width=IMSIZE, batchgen=bg, network_type='duos')
+nn = NeuralNet_Matching(height=IMSIZE, width=IMSIZE, batchgen=bg, network_type='triplet')
 
-loss, val_acc = nn.train(num_steps=NUM_STEPS,
+loss, val_loss = nn.train(num_steps=NUM_STEPS,
          batch_size=BATCH_SIZE,
          dropout_rate=0,
          lr=.0001,
@@ -37,7 +37,7 @@ loss, val_acc = nn.train(num_steps=NUM_STEPS,
 
 
 plt.plot(loss, color='b', alpha=.7)
-plt.plot(val_acc, color='g', alpha=.7)
+plt.plot(val_loss, color='g', alpha=.7)
 plt.show()
 
 ########################################
@@ -56,13 +56,9 @@ for triplet in batch:
     neg = triplet[:, :, 2].reshape([IMSIZE, IMSIZE, 1])
 
     embedding_distance_same = nn.compute_embedding_distance(image1=anchor,
-                                                       image2=pos,
-                                                       h=IMSIZE,
-                                                       w=IMSIZE)
+                                                       image2=pos)
     embedding_distance_diff = nn.compute_embedding_distance(image1=anchor,
-                                                            image2=neg,
-                                                            h=IMSIZE,
-                                                            w=IMSIZE)
+                                                            image2=neg)
     distances_same.append(embedding_distance_same)
     distances_diff.append(embedding_distance_diff)
 
@@ -84,9 +80,7 @@ for index, value in enumerate(hist_pos):
 def match(image1, image2, threshold=10):
 
     distance = nn.compute_embedding_distance(image1=image1,
-                                  image2=image2,
-                                  h=IMSIZE,
-                                  w=IMSIZE)
+                                  image2=image2)
     if distance < threshold:
         return 1
     else:
@@ -119,11 +113,11 @@ print((sensitivity+specificity)/2)
 samples = 0
 correct = 0
 for i in range(10):
-    x, y = bg.generate_val_duos(32)
+    x, y = bg.generate_train_duos(32)
     for img, label in zip(x, y):
         samples += 1
-        pred = nn.predict(img[:, :, 0].reshape(IMSIZE, IMSIZE, 1), img[:, :, 1].reshape(IMSIZE, IMSIZE, 1), IMSIZE, IMSIZE)
-        if pred == label[0]:
+        pred = nn.predict(img[:, :, 0].reshape(IMSIZE, IMSIZE, 1), img[:, :, 1].reshape(IMSIZE, IMSIZE, 1))
+        if np.round(pred, 0) == label:
             correct += 1
 print(correct/samples)
 
