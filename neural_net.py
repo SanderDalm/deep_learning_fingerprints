@@ -41,7 +41,8 @@ class NeuralNet_Matching:
             self.concat = tf.concat([self.anchor_embedding, self.pos_embedding], axis=1)
             self.fc1 = self.Dense(self.concat, 256, tf.nn.relu)
             self.fc2 = self.Dense(self.fc1, 256, tf.nn.relu)
-            self.prediction = self.Dense(self.fc2, 2, tf.nn.sigmoid)
+            self.prediction = tf.nn.softmax(self.Dense(self.fc2, 2))
+
             self.label = tf.placeholder(tf.int32, [None, 2])
             self.loss = tf.losses.softmax_cross_entropy(onehot_labels=self.label,
                                                         logits=self.prediction)
