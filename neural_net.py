@@ -165,13 +165,17 @@ class NeuralNet_Matching:
 
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
-        self.x = tf.placeholder(dtype=tf.float32, shape=[None, height, width, 3], name='input')
+        self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.imsize, self.imsize, 3], name='input')
         #self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
+
+        self.augment = tf.placeholder(tf.float32)
 
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
         self.anchor, self.pos, self.neg = tf.split(self.x, 3, axis=3)
+
+        self.anchor = tf.cond(self.augment > 0, lambda: augment(self.x), lambda: self.x)
 
         with tf.variable_scope('scope'):
             self.anchor_embedding = self.CNN(self.anchor, self.dropout_rate)
