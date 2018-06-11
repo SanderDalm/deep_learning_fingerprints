@@ -116,12 +116,10 @@ class BatchGenerator_Matching:
         for _ in range(batch_size):
 
             anchor_id = np.random.choice(candidate_ids)
+            anchor_index = self.ids.index('f' + anchor_id)
+            pos_index = self.ids.index('s' + anchor_id)
             if np.random.rand() < .5:
-                anchor_index = self.ids.index('f' + anchor_id)
-                pos_index = self.ids.index('s' + anchor_id)
-            else:
-                anchor_index = self.ids.index('s' + anchor_id)
-                pos_index = self.ids.index('f' + anchor_id)
+                anchor_index, pos_index = pos_index, anchor_index
 
             neg_candidate_ids = ['f' + x for x in candidate_ids if x != anchor_id]+['s' + x for x in candidate_ids if x != anchor_id]
             neg_id = np.random.choice(neg_candidate_ids)
