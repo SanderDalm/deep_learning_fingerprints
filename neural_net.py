@@ -1,6 +1,13 @@
 import tensorflow as tf
 import numpy as np
 
+def augment(images):
+
+    images = tf.map_fn(lambda img: tf.image.random_flip_left_right, images)
+    images = tf.map_fn(lambda img: tf.image.random_flip_up_down, images)
+
+    return images
+
 class NeuralNet_Classification:
 
     def __init__(self, imsize, batchgen):
@@ -14,12 +21,12 @@ class NeuralNet_Classification:
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, imsize, imsize, 1], name='input')
-        #self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
+        self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
 
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
-        self.cnn_output = self.CNN(self.x, self.dropout_rate)
+        self.cnn_output = self.CNN(self.x_standardized, self.dropout_rate)
 
         self.fc1 = self.Dense(self.cnn_output, 256, tf.nn.relu)
         self.fc2 = self.Dense(self.fc1, 256, tf.nn.relu)
