@@ -11,7 +11,7 @@ from batch_generators import BatchGenerator_Matching
 path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
 BATCH_SIZE = 32
-NUM_STEPS = 1000
+NUM_STEPS = 1001
 
 
 ########################################
@@ -35,6 +35,7 @@ loss, val_acc = nn.train(num_steps=NUM_STEPS,
          lr=.0001,
          decay=1)
 
+
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_acc, color='g', alpha=.7)
 plt.show()
@@ -50,9 +51,9 @@ distances_diff = []
 
 for triplet in batch:
 
-    anchor = triplet[:, :, 0].reshape([512, 512, 1])
-    pos = triplet[:, :, 1].reshape([512, 512, 1])
-    neg = triplet[:, :, 2].reshape([512, 512, 1])
+    anchor = triplet[:, :, 0].reshape([IMSIZE, IMSIZE, 1])
+    pos = triplet[:, :, 1].reshape([IMSIZE, IMSIZE, 1])
+    neg = triplet[:, :, 2].reshape([IMSIZE, IMSIZE, 1])
 
     embedding_distance_same = nn.compute_embedding_distance(image1=anchor,
                                                        image2=pos,
@@ -98,9 +99,9 @@ matches_neg = []
 
 for triplet in batch:
 
-    anchor = triplet[:, :, 0].reshape([512, 512, 1])
-    pos = triplet[:, :, 1].reshape([512, 512, 1])
-    neg = triplet[:, :, 2].reshape([512, 512, 1])
+    anchor = triplet[:, :, 0].reshape([IMSIZE, IMSIZE, 1])
+    pos = triplet[:, :, 1].reshape([IMSIZE, IMSIZE, 1])
+    neg = triplet[:, :, 2].reshape([IMSIZE, IMSIZE, 1])
 
     matches_pos.append(match(anchor, pos))
     matches_neg.append(match(anchor, neg))
@@ -109,3 +110,22 @@ sensitivity = np.mean(matches_pos)
 specificity = 1-np.mean(matches_neg)
 
 print((sensitivity+specificity)/2)
+
+
+########################################
+# Determine acc for duo network
+########################################
+
+samples = 0
+correct = 0
+for i in range(10):
+    x, y = bg.generate_val_duos(32)
+    for img, label in zip(x, y):
+        samples += 1
+        pred = nn.predict(img[:, :, 0].reshape(IMSIZE, IMSIZE, 1), img[:, :, 1].reshape(IMSIZE, IMSIZE, 1), IMSIZE, IMSIZE)
+        if pred == label[0]:
+            correct += 1
+print(correct/samples)
+
+
+

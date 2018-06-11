@@ -41,11 +41,10 @@ class NeuralNet_Matching:
             self.concat = tf.concat([self.anchor_embedding, self.pos_embedding], axis=1)
             self.fc1 = self.Dense(self.concat, 256, tf.nn.relu)
             self.fc2 = self.Dense(self.fc1, 256, tf.nn.relu)
-            self.prediction = tf.nn.softmax(self.Dense(self.fc2, 2))
+            self.prediction = self.Dense(self.fc2, 1, tf.nn.sigmoid)
 
-            self.label = tf.placeholder(tf.int32, [None, 2])
-            self.loss = tf.losses.softmax_cross_entropy(onehot_labels=self.label,
-                                                        logits=self.prediction)
+            self.label = tf.placeholder(tf.int32, [None, 1])
+            self.loss = tf.losses.log_loss(labels=self.label, predictions=self.prediction)
 
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
@@ -167,3 +166,17 @@ class NeuralNet_Matching:
                          feed_dict=feed_dict)
 
         return embedding_distance[0][0]
+
+    def predict(self, image1, image2, h, w):
+
+        x = np.concatenate([image1, image2, image2],
+                           axis=2)  # The second image2 is a placeholder because the network expects triplets
+        x = x.reshape([1, h, w, 3])
+
+        feed_dict = {
+            self.x: x,
+            self.dropout_rate: 0
+        }
+        pred = self.session.run([self.prediction] ,feed_dict=feed_dict)
+
+        return pred[0][0]

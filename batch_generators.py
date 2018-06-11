@@ -154,7 +154,7 @@ class BatchGenerator_Matching:
                     partner_index = anchor_index_s
                 if anchor_letter == 's':
                     partner_index = anchor_index_f
-                label = [1, 0]
+                label = 1
 
             else:
                 # neg case
@@ -163,7 +163,7 @@ class BatchGenerator_Matching:
                                                                                                 x != anchor_id]
                 neg_id = np.random.choice(neg_candidate_ids)
                 partner_index = self.ids.index(neg_id)
-                label = [0, 1]
+                label = 0
 
 
             duo = np.concatenate([self.images[anchor_index], self.images[partner_index], self.images[partner_index]],
@@ -172,7 +172,7 @@ class BatchGenerator_Matching:
             x_batch.append(duo)
             y_batch.append(label)
 
-        return np.array(x_batch), np.array(y_batch)
+        return np.array(x_batch), np.array(y_batch).reshape(batch_size, 1)
 
 
     def generate_train_triplets(self, batch_size):
