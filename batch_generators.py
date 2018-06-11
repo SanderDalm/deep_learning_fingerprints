@@ -36,6 +36,7 @@ class BatchGenerator_Classification:
                 if line.startswith('Class'):
                     label = line[7]
 
+            img = img / 255
             images.append(img)
             labels.append(label)
 

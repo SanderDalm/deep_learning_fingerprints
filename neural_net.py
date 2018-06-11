@@ -3,8 +3,11 @@ import numpy as np
 
 def augment(images):
 
-    images = tf.map_fn(lambda img: tf.image.random_flip_left_right, images)
-    images = tf.map_fn(lambda img: tf.image.random_flip_up_down, images)
+    images = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), images)
+    images = tf.map_fn(lambda img: tf.image.random_flip_up_down(img), images)
+    noise = tf.random_normal(shape=tf.shape(images), mean=0.0, stddev=0.1,
+                             dtype=tf.float32)
+    images = tf.add(images, noise)
 
     return images
 
@@ -21,12 +24,16 @@ class NeuralNet_Classification:
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, imsize, imsize, 1], name='input')
-        self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
+        #self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
+
+        self.augment = tf.placeholder(tf.float32)
+        self.cnn_input = tf.cond(self.augment > 0, lambda: augment(self.x), lambda: self.x)
 
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
-        self.cnn_output = self.CNN(self.x_standardized, self.dropout_rate)
+        self.cnn_output = self.CNN(self.cnn_input, self.dropout_rate)
+
 
         self.fc1 = self.Dense(self.cnn_output, 256, tf.nn.relu)
         self.fc2 = self.Dense(self.fc1, 256, tf.nn.relu)
@@ -97,6 +104,7 @@ class NeuralNet_Classification:
             feed_dict = {
                         self.x: x_batch,
                         self.label: y_batch,
+                        self.augment: 1,
                         self.dropout_rate: dropout_rate,
                         self.lr: lr
                         }
@@ -111,6 +119,7 @@ class NeuralNet_Classification:
                 feed_dict = {
                             self.x: x_batch,
                             self.label: y_batch,
+                            self.augment: 0,
                             self.dropout_rate: 0
                             }
 
@@ -134,11 +143,12 @@ class NeuralNet_Classification:
 
         feed_dict = {
             self.x: image.reshape(1, self.imsize, self.imsize, 1),
+            self.augment: 0,
             self.dropout_rate: 0
         }
-        pred = self.session.run([self.prediction], feed_dict=feed_dict)
+        pred, cnn_input = self.session.run([self.prediction, self.cnn_input], feed_dict=feed_dict)
 
-        return pred[0][0]
+        return pred[0][0], cnn_input
 
 
 class NeuralNet_Matching:
@@ -316,7 +326,7 @@ class NeuralNet_Matching:
         feed_dict = {
             self.x: x,
             self.dropout_rate: 0
-        }
+            }
         pred = self.session.run([self.prediction] ,feed_dict=feed_dict)
 
         return pred[0][0][0]
