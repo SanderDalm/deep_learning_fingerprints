@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from neural_net_matching import NeuralNet_Matching
-from batch_generators import BatchGenerator_Matching
+from batch_generator_matching import BatchGenerator_Matching
 
 ########################################
 # Set globals

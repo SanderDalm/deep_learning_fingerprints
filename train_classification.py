@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from batch_generators import BatchGenerator_Classification
+from batch_generator_classification import BatchGenerator_Classification
 from neural_net_classification import NeuralNet_Classification
 
 ########################################
