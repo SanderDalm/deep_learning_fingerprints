@@ -51,8 +51,9 @@ class NeuralNet_Matching:
             self.loss = tf.reduce_mean(tf.maximum(self.anchor_minus_pos - self.anchor_minus_neg + 1, 0))
 
         if self.network_type == 'duos':
-            self.concat = tf.concat([self.anchor_embedding, self.pos_embedding], axis=1)
-            self.fc1 = Dense(self.concat, 256, tf.nn.relu)
+            self.embedding_diff = tf.abs(self.anchor_embedding - self.pos_embedding)
+            self.fc1 = Dense(self.embedding_diff, 256, tf.nn.relu)
+            self.fc1 = tf.layers.dropout(inputs=self.fc1, rate=self.dropout_rate)
             self.fc2 = Dense(self.fc1, 256, tf.nn.relu)
             self.prediction = Dense(self.fc2, 1, tf.nn.sigmoid)
 

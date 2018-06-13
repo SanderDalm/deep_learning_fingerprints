@@ -116,7 +116,7 @@ print((sensitivity+specificity)/2)
 samples = 0
 correct = 0
 for i in range(10):
-    x, y = bg.generate_train_duos(32)
+    x, y = bg.generate_val_duos(32)
     for img, label in zip(x, y):
         samples += 1
         pred = nn.predict(img[:, :, 0].reshape(IMSIZE, IMSIZE, 1), img[:, :, 1].reshape(IMSIZE, IMSIZE, 1))
