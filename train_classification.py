@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from batch_generators import BatchGenerator_Classification
-from neural_net import NeuralNet_Classification
+from neural_net_classification import NeuralNet_Classification
 
 ########################################
 # Set globals
