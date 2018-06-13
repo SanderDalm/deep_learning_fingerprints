@@ -134,9 +134,9 @@ class BatchGenerator_Matching:
                 if np.random.rand() > .5:
                     anchor_img, pos_img, neg_img = np.fliplr(anchor_img), np.fliplr(pos_img), np.fliplr(neg_img)
 
-                anchor_img += np.random.normal(0, .1, shape=anchor_img.shape)
-                pos_img += np.random.normal(0, .1, shape=pos_img.shape)
-                neg_img += np.random.normal(0, .1, shape=neg_img.shape)
+                # anchor_img += np.random.normal(0, .1, size=anchor_img.shape)
+                # pos_img += np.random.normal(0, .1, size=pos_img.shape)
+                # neg_img += np.random.normal(0, .1, size=neg_img.shape)
 
             triplet = np.concatenate([anchor_img, pos_img, neg_img], axis=2)
             batch.append(triplet)
@@ -182,8 +182,8 @@ class BatchGenerator_Matching:
                 if np.random.rand() > .5:
                     anchor_img, partner_img = np.fliplr(anchor_img), np.fliplr(partner_img)
 
-                anchor_img += np.random.normal(0, .1, size=anchor_img.shape)
-                partner_img += np.random.normal(0, .1, size=partner_img.shape)
+                #anchor_img += np.random.normal(0, .1, size=anchor_img.shape)
+                #partner_img += np.random.normal(0, .1, size=partner_img.shape)
 
             duo = np.concatenate([anchor_img, partner_img, partner_img], axis=2)
 

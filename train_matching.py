@@ -20,8 +20,22 @@ NUM_STEPS = 2001
 
 bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
 
+
+from time import time
+
+start = time()
+for i in range(100):
+    bg.generate_val_triplets(32, False)
+print(time()-start)
+
+
+start = time()
+for i in range(100):
+    bg.generate_val_triplets(32, True)
+print(time()-start)
+
 # Check batch gen output
-# x, y = bg.generate_val_duos(32, True)
+# x, y = bg.generate_train_duos(1, True)
 # index=0
 # y[index]
 # plt.imshow(np.concatenate([x[index, :, :, 0], x[index, :, :, 1]], axis=0))
