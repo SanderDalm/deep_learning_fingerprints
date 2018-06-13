@@ -24,25 +24,36 @@ def Conv2D(x, filters, kernel_size, stride, padding='same'):
 
 
 def CNN(x, dropout_rate=None):
+
     x = Conv2D(x, 16, 3, 1)
+    x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)
 
     x = Conv2D(x, 32, 3, 1)
+    x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)
 
     x = Conv2D(x, 64, 3, 1)
+    x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)
 
     x = Conv2D(x, 128, 3, 1)
+    x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)
 
-    return tf.layers.flatten(x)
+    x = Conv2D(x, 128, 3, 1)
+    x = tf.layers.dropout(inputs=x, rate=dropout_rate)
+    x = tf.layers.max_pooling2d(x, 2, 2)
+
+    flatten = tf.layers.flatten(x)
+
+    return tf.layers.dropout(inputs=flatten, rate=dropout_rate)
 
 
 def augment(images):
 
-    images = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), images)
-    images = tf.map_fn(lambda img: tf.image.random_flip_up_down(img), images)
+    #images = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), images)
+    #images = tf.map_fn(lambda img: tf.image.random_flip_up_down(img), images)
     noise = tf.random_normal(shape=tf.shape(images), mean=0.0, stddev=0.1,
                              dtype=tf.float32)
     images = tf.add(images, noise)
@@ -63,18 +74,23 @@ class NeuralNet_Classification:
 
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
+        # Feed placeholders
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, imsize, imsize, 1], name='input')
-        self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
-
-        #self.augment = tf.placeholder(tf.float32)
-        #self.cnn_input = tf.cond(self.augment > 0, lambda: augment(self.x), lambda: self.x)
-
+        self.augment = tf.placeholder(tf.float32)
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
-        self.cnn_output = CNN(self.x_standardized, self.dropout_rate)
+        # Standardization and augmentation
+        self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
+        self.cnn_input = tf.cond(self.augment > 0, lambda: augment(self.x_standardized), lambda: self.x_standardized)
+
+
+        # Run the network
+        self.cnn_output = CNN(self.cnn_input, self.dropout_rate)
 
         self.fc1 = Dense(self.cnn_output, 256, tf.nn.relu)
+        self.fc1 = tf.layers.dropout(inputs=self.fc1, rate=self.dropout_rate)
+
         self.fc2 = Dense(self.fc1, 256, tf.nn.relu)
         self.logits = Dense(self.fc2, 5, None)
         self.prediction = tf.nn.softmax(self.logits)
@@ -92,7 +108,7 @@ class NeuralNet_Classification:
                                     name='checkpoint_saver')
 
 
-    def train(self, num_steps, batch_size, dropout_rate, lr, decay, checkpoint='models/neural_net'):
+    def train(self, num_steps, batch_size, dropout_rate, lr, decay, augment, checkpoint='models/neural_net'):
 
         loss_list = []
         val_loss_list = []
@@ -105,6 +121,7 @@ class NeuralNet_Classification:
                         self.x: x_batch,
                         self.label: y_batch,
                         self.dropout_rate: dropout_rate,
+                        self.augment: augment,
                         self.lr: lr
                         }
 
@@ -116,7 +133,8 @@ class NeuralNet_Classification:
                 feed_dict = {
                             self.x: x_batch,
                             self.label: y_batch,
-                            self.dropout_rate: 0
+                            self.dropout_rate: 0,
+                            self.augment: 0
                             }
 
                 val_loss = self.session.run([self.loss], feed_dict=feed_dict)
@@ -139,7 +157,8 @@ class NeuralNet_Classification:
 
         feed_dict = {
             self.x: image.reshape(1, self.imsize, self.imsize, 1),
-            self.dropout_rate: 0
+            self.dropout_rate: 0,
+            self.augment: 0
         }
         pred = self.session.run([self.prediction], feed_dict=feed_dict)
 
@@ -160,19 +179,27 @@ class NeuralNet_Matching:
 
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
+        # Feed placeholders
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.imsize, self.imsize, 3], name='input')
-        self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
-
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
+        self.augment = tf.placeholder(tf.float32)
 
         self.anchor, self.pos, self.neg = tf.split(self.x, 3, axis=3)
 
-        self.augment = tf.placeholder(tf.float32)
+
+        # Standardization and augmentation
+        self.anchor = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.anchor)
         self.anchor = tf.cond(self.augment > 0, lambda: augment(self.anchor), lambda: self.anchor)
+
+        self.pos = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.pos)
         self.pos = tf.cond(self.augment > 0, lambda: augment(self.pos), lambda: self.pos)
+
+        self.neg = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.neg)
         self.neg = tf.cond(self.augment > 0, lambda: augment(self.neg), lambda: self.neg)
 
+
+        # Run the network
         with tf.variable_scope('scope'):
             self.anchor_embedding = CNN(self.anchor, self.dropout_rate)
         with tf.variable_scope('scope', reuse=True):
@@ -205,7 +232,7 @@ class NeuralNet_Matching:
                                     name='checkpoint_saver')
 
 
-    def train(self, num_steps, batch_size, dropout_rate, lr, decay, checkpoint='models/neural_net'):
+    def train(self, num_steps, batch_size, dropout_rate, lr, decay, augment, checkpoint='models/neural_net'):
 
         loss_list = []
         val_loss_list = []
@@ -217,7 +244,7 @@ class NeuralNet_Matching:
                 feed_dict = {
                             self.x: x_batch,
                             self.dropout_rate: dropout_rate,
-                            self.augment:1,
+                            self.augment: augment,
                             self.lr: lr
                             }
             if self.network_type == 'duos':
@@ -226,6 +253,7 @@ class NeuralNet_Matching:
                             self.x: x_batch,
                             self.label: y_batch,
                             self.dropout_rate: dropout_rate,
+                            self.augment: augment,
                             self.lr: lr
                             }
 
@@ -238,8 +266,8 @@ class NeuralNet_Matching:
                     x_batch = self.batchgen.generate_val_triplets(batch_size)
                     feed_dict = {
                                 self.x: x_batch,
-                                self.augment: 0,
-                                self.dropout_rate: 0
+                                self.dropout_rate: 0,
+                                self.augment: 0
                                 }
                 if self.network_type == 'duos':
                     x_batch, y_batch = self.batchgen.generate_val_duos(batch_size)
@@ -247,7 +275,7 @@ class NeuralNet_Matching:
                         self.x: x_batch,
                         self.label: y_batch,
                         self.dropout_rate: dropout_rate,
-                        self.lr: lr
+                        self.augment: 0
                     }
                 val_loss = self.session.run([self.loss], feed_dict=feed_dict)
                 val_loss_list.append(val_loss)
