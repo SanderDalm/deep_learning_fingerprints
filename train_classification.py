@@ -21,7 +21,7 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
          dropout_rate=0.5,
          lr=.0001,
          decay=1,
-         augment=1)
+         augment=True)
 
 
 plt.plot(loss, color='b', alpha=.7)

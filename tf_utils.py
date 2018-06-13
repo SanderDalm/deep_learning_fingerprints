@@ -46,14 +46,3 @@ def CNN(x, dropout_rate=None):
     flatten = tf.layers.flatten(x)
 
     return tf.layers.dropout(inputs=flatten, rate=dropout_rate)
-
-
-def augment(images):
-
-    #images = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), images)
-    #images = tf.map_fn(lambda img: tf.image.random_flip_up_down(img), images)
-    noise = tf.random_normal(shape=tf.shape(images), mean=0.0, stddev=0.1,
-                             dtype=tf.float32)
-    images = tf.add(images, noise)
-
-    return images

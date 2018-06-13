@@ -10,7 +10,7 @@ from batch_generators import BatchGenerator_Matching
 
 path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 NUM_STEPS = 2001
 
 
@@ -20,19 +20,21 @@ NUM_STEPS = 2001
 
 bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
 
+# Check batch gen output
+# x, y = bg.generate_val_duos(32, True)
+# index=0
+# y[index]
+# plt.imshow(np.concatenate([x[index, :, :, 0], x[index, :, :, 1]], axis=0))
+# plt.show()
+# print(y[0])
 
-#x, y = bg.generate_val_duos(32)
-#index=-7
-#y[index]
-#plt.imshow(np.concatenate([x[index, :, :, 0], x[index, :, :, 1]], axis=0))
-#plt.show()
 
 nn = NeuralNet_Matching(imsize=IMSIZE, batchgen=bg, network_type='duos')
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
          batch_size=BATCH_SIZE,
          dropout_rate=0.5,
-         augment=1,
+         augment=True,
          lr=.0001,
          decay=1)
 
@@ -115,6 +117,9 @@ print((sensitivity+specificity)/2)
 
 samples = 0
 correct = 0
+pos_preds = []
+neg_preds = []
+
 for i in range(10):
     x, y = bg.generate_val_duos(32)
     for img, label in zip(x, y):
@@ -122,7 +127,13 @@ for i in range(10):
         pred = nn.predict(img[:, :, 0].reshape(IMSIZE, IMSIZE, 1), img[:, :, 1].reshape(IMSIZE, IMSIZE, 1))
         if np.round(pred, 0) == label:
             correct += 1
+
+        if label == 0:
+            neg_preds.append(pred)
+        if label == 1:
+            pos_preds.append(pred)
 print(correct/samples)
 
-
-
+plt.hist(pos_preds, color='g', alpha=.4)
+plt.hist(neg_preds, color='r', alpha=.4)
+plt.show()

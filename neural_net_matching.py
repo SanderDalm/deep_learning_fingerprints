@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from tf_utils import Dense, CNN, augment
+from tf_utils import Dense, CNN
 
 class NeuralNet_Matching:
 
@@ -20,20 +20,16 @@ class NeuralNet_Matching:
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.imsize, self.imsize, 3], name='input')
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
-        self.augment = tf.placeholder(tf.float32)
 
+        # Split inputs
         self.anchor, self.pos, self.neg = tf.split(self.x, 3, axis=3)
 
 
-        # Standardization and augmentation
+        # Standardization
         self.anchor = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.anchor)
-        self.anchor = tf.cond(self.augment > 0, lambda: augment(self.anchor), lambda: self.anchor)
-
         self.pos = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.pos)
-        self.pos = tf.cond(self.augment > 0, lambda: augment(self.pos), lambda: self.pos)
-
         self.neg = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.neg)
-        self.neg = tf.cond(self.augment > 0, lambda: augment(self.neg), lambda: self.neg)
+
 
 
         # Run the network
@@ -78,20 +74,18 @@ class NeuralNet_Matching:
         for step in range(num_steps):
 
             if self.network_type == 'triplet':
-                x_batch = self.batchgen.generate_train_triplets(batch_size)
+                x_batch = self.batchgen.generate_train_triplets(batch_size, augment)
                 feed_dict = {
                             self.x: x_batch,
                             self.dropout_rate: dropout_rate,
-                            self.augment: augment,
                             self.lr: lr
                             }
             if self.network_type == 'duos':
-                x_batch, y_batch = self.batchgen.generate_train_duos(batch_size)
+                x_batch, y_batch = self.batchgen.generate_train_duos(batch_size, augment)
                 feed_dict = {
                             self.x: x_batch,
                             self.label: y_batch,
                             self.dropout_rate: dropout_rate,
-                            self.augment: augment,
                             self.lr: lr
                             }
 
@@ -101,20 +95,19 @@ class NeuralNet_Matching:
 
             if step % 100 == 0:
                 if self.network_type == 'triplet':
-                    x_batch = self.batchgen.generate_val_triplets(batch_size)
+                    x_batch = self.batchgen.generate_val_triplets(batch_size, False)
                     feed_dict = {
                                 self.x: x_batch,
-                                self.dropout_rate: 0,
-                                self.augment: 0
+                                self.dropout_rate: 0
                                 }
                 if self.network_type == 'duos':
-                    x_batch, y_batch = self.batchgen.generate_val_duos(batch_size)
+                    x_batch, y_batch = self.batchgen.generate_val_duos(batch_size, False)
                     feed_dict = {
                         self.x: x_batch,
                         self.label: y_batch,
                         self.dropout_rate: dropout_rate,
-                        self.augment: 0
-                    }
+
+                                }
                 val_loss = self.session.run([self.loss], feed_dict=feed_dict)
                 val_loss_list.append(val_loss)
                 loss_list.append(loss_)
@@ -138,8 +131,7 @@ class NeuralNet_Matching:
 
         feed_dict = {
             self.x: x,
-            self.dropout_rate: 0,
-            self.augment: 0
+            self.dropout_rate: 0
                     }
         embedding_distance = self.session.run([self.anchor_minus_pos],
                          feed_dict=feed_dict)
@@ -155,8 +147,7 @@ class NeuralNet_Matching:
 
         feed_dict = {
             self.x: x,
-            self.dropout_rate: 0,
-            self.augment: 0
+            self.dropout_rate: 0
             }
         pred = self.session.run([self.prediction], feed_dict=feed_dict)
 
