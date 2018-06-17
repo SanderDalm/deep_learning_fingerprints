@@ -34,7 +34,7 @@ nn = NeuralNet_Matching(imsize=IMSIZE, batchgen=bg, network_type='duos')
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
          batch_size=BATCH_SIZE,
          dropout_rate=0.5,
-         augment=True,
+         augment=False,
          lr=.0001,
          decay=1)
 
