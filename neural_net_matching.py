@@ -4,7 +4,7 @@ from tf_utils import Dense, CNN
 
 class NeuralNet_Matching:
 
-    def __init__(self, imsize, batchgen, network_type='triplet'):
+    def __init__(self, imsize, batchgen, network_type='triplets'):
 
         self.imsize = imsize
 
@@ -40,7 +40,7 @@ class NeuralNet_Matching:
             self.neg_embedding = CNN(self.neg, self.dropout_rate)
 
 
-        if self.network_type == 'triplet':
+        if self.network_type == 'triplets':
             self.anchor_minus_pos = tf.norm(self.anchor_embedding - self.pos_embedding, axis=1)
             self.anchor_minus_neg = tf.norm(self.anchor_embedding - self.neg_embedding, axis=1)
             self.loss = tf.reduce_mean(tf.maximum(self.anchor_minus_pos - self.anchor_minus_neg + 1, 0))
@@ -72,7 +72,7 @@ class NeuralNet_Matching:
 
         for step in range(num_steps):
 
-            if self.network_type == 'triplet':
+            if self.network_type == 'triplets':
                 x_batch = self.batchgen.generate_train_triplets(batch_size, augment)
                 feed_dict = {
                             self.x: x_batch,
@@ -93,7 +93,7 @@ class NeuralNet_Matching:
             lr *= decay
 
             if step % 100 == 0:
-                if self.network_type == 'triplet':
+                if self.network_type == 'triplets':
                     x_batch = self.batchgen.generate_val_triplets(batch_size, False)
                     feed_dict = {
                                 self.x: x_batch,

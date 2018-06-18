@@ -29,7 +29,7 @@ bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
 # print(y[0])
 
 
-nn = NeuralNet_Matching(imsize=IMSIZE, batchgen=bg, network_type='triplet')
+nn = NeuralNet_Matching(imsize=IMSIZE, batchgen=bg, network_type='duos')
 
 # Record: conv/conv/dropout/pool architectuur, .5 dropout, augment false, lr.0001, decay 1, 2k stappen, 93% acc, 'models/neural_net899.ckpt'
 
@@ -40,7 +40,7 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
          lr=.0001,
          decay=1)
 
-#nn.load_weights('models/neural_net899.ckpt')
+nn.load_weights('models/neural_net1399.ckpt')
 
 
 plt.plot(loss, color='b', alpha=.7)
@@ -85,7 +85,7 @@ for index, value in enumerate(hist_pos):
 # Determine threshold for accuracy
 ########################################
 
-def match(image1, image2, threshold=11):
+def match(image1, image2, threshold=16):
 
     distance = nn.compute_embedding_distance(image1=image1,
                                   image2=image2)
@@ -124,7 +124,7 @@ correct = 0
 pos_preds = []
 neg_preds = []
 
-for i in range(50):
+for i in range(15):
     x, y = bg.generate_val_duos(32)
     for img, label in zip(x, y):
         samples += 1
