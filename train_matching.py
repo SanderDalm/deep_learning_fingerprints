@@ -8,7 +8,7 @@ from batch_generator_matching import BatchGenerator_Matching
 # Set globals
 ########################################
 
-path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
+path = '/mnt/ssd/data/deep_learning_fingerprints/sd04/png_txt' #'/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
 BATCH_SIZE = 32
 NUM_STEPS = 2001
@@ -29,7 +29,9 @@ bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
 # print(y[0])
 
 
-nn = NeuralNet_Matching(imsize=IMSIZE, batchgen=bg, network_type='duos')
+nn = NeuralNet_Matching(imsize=IMSIZE, batchgen=bg, network_type='triplet')
+
+# Record: conv/conv/dropout/pool architectuur, .5 dropout, augment false, lr.0001, decay 1, 2k stappen, 93% acc, 'models/neural_net899.ckpt'
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
          batch_size=BATCH_SIZE,
@@ -37,6 +39,8 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
          augment=False,
          lr=.0001,
          decay=1)
+
+#nn.load_weights('models/neural_net899.ckpt')
 
 
 plt.plot(loss, color='b', alpha=.7)
@@ -120,7 +124,7 @@ correct = 0
 pos_preds = []
 neg_preds = []
 
-for i in range(10):
+for i in range(50):
     x, y = bg.generate_val_duos(32)
     for img, label in zip(x, y):
         samples += 1

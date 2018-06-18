@@ -31,7 +31,6 @@ class NeuralNet_Matching:
         self.neg = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.neg)
 
 
-
         # Run the network
         with tf.variable_scope('scope'):
             self.anchor_embedding = CNN(self.anchor, self.dropout_rate)
@@ -117,7 +116,7 @@ class NeuralNet_Matching:
                 print('lr: {}'.format(lr))
                 print('')
 
-            if (step + 1) % 1000 == 0 or step == num_steps - 1:
+            if (step + 1) % 100 == 0 or step == num_steps - 1:
                 self.saver.save(self.session, checkpoint + str(step) + '.ckpt')
                 print('Saved to {}'.format(checkpoint + str(step) + '.ckpt'))
 
@@ -152,3 +151,8 @@ class NeuralNet_Matching:
         pred = self.session.run([self.prediction], feed_dict=feed_dict)
 
         return pred[0][0][0]
+
+
+    def load_weights(self, path):
+        self.saver.restore(self.session, path)
+        print('Weights loaded.')

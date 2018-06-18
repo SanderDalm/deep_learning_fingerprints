@@ -24,21 +24,26 @@ def Conv2D(x, filters, kernel_size, stride, padding='same'):
 def CNN(x, dropout_rate=None):
 
     x = Conv2D(x, 16, 3, 1)
+    x = Conv2D(x, 16, 3, 1)
     x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)
 
+    x = Conv2D(x, 32, 3, 1)
     x = Conv2D(x, 32, 3, 1)
     x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)
 
     x = Conv2D(x, 64, 3, 1)
+    x = Conv2D(x, 64, 3, 1)
     x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)
 
     x = Conv2D(x, 128, 3, 1)
+    x = Conv2D(x, 128, 3, 1)
     x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)
 
+    x = Conv2D(x, 128, 3, 1)
     x = Conv2D(x, 128, 3, 1)
     x = tf.layers.dropout(inputs=x, rate=dropout_rate)
     x = tf.layers.max_pooling2d(x, 2, 2)

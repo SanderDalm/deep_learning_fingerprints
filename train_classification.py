@@ -7,7 +7,7 @@ from neural_net_classification import NeuralNet_Classification
 # Set globals
 ########################################
 
-path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
+path = '/mnt/ssd/data/deep_learning_fingerprints/sd04/png_txt' #'/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
 BATCH_SIZE = 32
 NUM_STEPS = 1001
@@ -21,7 +21,7 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
          dropout_rate=0.5,
          lr=.0001,
          decay=1,
-         augment=True)
+         augment=False)
 
 
 plt.plot(loss, color='b', alpha=.7)

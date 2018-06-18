@@ -96,3 +96,8 @@ class NeuralNet_Classification:
         pred = self.session.run([self.prediction], feed_dict=feed_dict)
 
         return pred[0][0]
+
+
+    def load_weights(self, path):
+        self.saver.restore(self.session, path)
+        print('Weights loaded.')
