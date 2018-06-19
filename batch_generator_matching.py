@@ -2,7 +2,10 @@ from tqdm import tqdm
 from scipy.misc import imread, imresize
 import numpy as np
 from glob import glob
-
+from skimage.filters import gabor
+from skimage.morphology import skeletonize
+from skimage.util import invert
+from skimage.filters import threshold_otsu
 
 class BatchGenerator_Matching:
 
@@ -15,7 +18,6 @@ class BatchGenerator_Matching:
 
         self.sample_ids_train = self.sample_ids[:1600]
         self.sample_ids_val = self.sample_ids[1600:]
-
 
     def parse_data(self, path):
 
@@ -31,8 +33,17 @@ class BatchGenerator_Matching:
             image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
 
             img = imread(image_path)
-            img = img.reshape([self.imsize, self.imsize, 1])
+
             img = img / 255
+
+            #filt_real, img = gabor(img, frequency=0.6)
+
+            # thresh = threshold_otsu(img)
+            # img = img > thresh
+            # img = invert(img)
+            # img = skeletonize(img)
+
+            img = img.reshape([self.imsize, self.imsize, 1])
             images.append(img)
 
         return images, ids

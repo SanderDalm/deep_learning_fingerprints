@@ -123,21 +123,6 @@ class NeuralNet_Matching:
         return loss_list, val_loss_list
 
 
-    def compute_embedding_distance(self, image1, image2):
-
-        x = np.concatenate([image1, image2, image2], axis=2) # The second image2 is a placeholder because the network expects triplets
-        x = x.reshape([1, self.imsize, self.imsize, 3])
-
-        feed_dict = {
-            self.x: x,
-            self.dropout_rate: 0
-                    }
-        embedding_distance = self.session.run([self.anchor_minus_pos],
-                         feed_dict=feed_dict)
-
-        return embedding_distance[0][0]
-
-
     def predict(self, image1, image2):
 
         x = np.concatenate([image1, image2, image2],
@@ -148,9 +133,17 @@ class NeuralNet_Matching:
             self.x: x,
             self.dropout_rate: 0
             }
-        pred = self.session.run([self.prediction], feed_dict=feed_dict)
 
-        return pred[0][0][0]
+        if self.network_type == 'duos':
+            pred, anchor_embedding, partner_embedding = self.session.run([self.prediction, self.anchor_embedding, self.pos_embedding], feed_dict=feed_dict)
+            return pred[0][0], np.linalg.norm(anchor_embedding - partner_embedding, axis=1)[0]
+        if self.network_type == 'triplets':
+            anchor_embedding, partner_embedding = self.session.run(
+                [self.anchor_embedding, self.pos_embedding], feed_dict=feed_dict)
+            return None, np.linalg.norm(anchor_embedding - partner_embedding, axis=1)[0]
+
+
+
 
 
     def load_weights(self, path):
