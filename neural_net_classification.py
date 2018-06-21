@@ -44,7 +44,7 @@ class NeuralNet_Classification:
                                     name='checkpoint_saver')
 
 
-    def train(self, num_steps, batch_size, dropout_rate, lr, decay, augment, checkpoint='models/neural_net'):
+    def train(self, num_steps, batch_size, dropout_rate, lr, decay, checkpoint='models/neural_net'):
 
         loss_list = []
         val_loss_list = []
@@ -52,7 +52,7 @@ class NeuralNet_Classification:
         for step in range(num_steps):
 
 
-            x_batch, y_batch = self.batchgen.generate_train_batch(batch_size, augment)
+            x_batch, y_batch = self.batchgen.generate_train_batch(batch_size)
             feed_dict = {
                         self.x: x_batch,
                         self.label: y_batch,
@@ -64,7 +64,7 @@ class NeuralNet_Classification:
             lr *= decay
 
             if step % 100 == 0:
-                x_batch, y_batch = self.batchgen.generate_val_batch(batch_size, False)
+                x_batch, y_batch = self.batchgen.generate_val_batch(batch_size)
                 feed_dict = {
                             self.x: x_batch,
                             self.label: y_batch,
@@ -80,7 +80,7 @@ class NeuralNet_Classification:
                 print('lr: {}'.format(lr))
                 print('')
 
-            if (step + 1) % 1000 == 0 or step == num_steps - 1:
+            if (step + 1) % 100 == 0 or step == num_steps - 1:
                 self.saver.save(self.session, checkpoint + str(step) + '.ckpt')
                 print('Saved to {}'.format(checkpoint + str(step) + '.ckpt'))
 

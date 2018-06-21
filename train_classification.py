@@ -9,8 +9,8 @@ from neural_net_classification import NeuralNet_Classification
 
 path = '/mnt/ssd/data/deep_learning_fingerprints/sd04/png_txt' #'/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
-BATCH_SIZE = 32
-NUM_STEPS = 1001
+BATCH_SIZE = 8
+NUM_STEPS = 201
 
 bg = BatchGenerator_Classification(path, IMSIZE)
 
@@ -18,7 +18,7 @@ nn = NeuralNet_Classification(IMSIZE, bg)
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
          batch_size=BATCH_SIZE,
-         dropout_rate=0.5,
+         dropout_rate=0,
          lr=.0001,
          decay=1,
          augment=False)
