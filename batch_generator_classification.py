@@ -11,8 +11,8 @@ class BatchGenerator_Classification:
 
         self.imsize = imsize
         self.images, self.labels = self.parse_data(path)
-        self.images_train, self.labels_train = self.images[:1600], self.labels[:1600]
-        self.images_val, self.labels_val = self.images[1600:], self.labels[1600:]
+        self.images_train, self.labels_train = self.images[:3600], self.labels[:3600]
+        self.images_val, self.labels_val = self.images[3600:], self.labels[3600:]
 
 
     def parse_data(self, path):
