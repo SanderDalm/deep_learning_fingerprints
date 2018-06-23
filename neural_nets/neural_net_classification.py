@@ -3,7 +3,7 @@ from neural_nets.tf_utils import Dense, CNN
 
 class NeuralNet_Classification:
 
-    def __init__(self, height, width):
+    def __init__(self, height, width, categories):
 
         self.height = height
         self.width = width
@@ -27,10 +27,10 @@ class NeuralNet_Classification:
         self.fc1 = tf.layers.dropout(inputs=self.fc1, rate=self.dropout_rate)
 
         self.fc2 = Dense(self.fc1, 256, tf.nn.relu)
-        self.logits = Dense(self.fc2, 5, None)
+        self.logits = Dense(self.fc2, categories, None)
         self.prediction = tf.nn.softmax(self.logits)
 
-        self.label = tf.placeholder(tf.int32, [None, 5])
+        self.label = tf.placeholder(tf.int32, [None, categories])
         self.loss = tf.losses.softmax_cross_entropy(logits=self.logits, onehot_labels=self.label)
 
 
@@ -62,7 +62,7 @@ class NeuralNet_Classification:
             loss_, _ = self.session.run([self.loss, self.train_step], feed_dict=feed_dict)
             lr *= decay
 
-            if step % 100 == 0:
+            if step % 1000 == 0:
                 x_batch, y_batch = batchgen.generate_val_batch(batch_size)
                 feed_dict = {
                             self.x: x_batch,
@@ -79,7 +79,7 @@ class NeuralNet_Classification:
                 print('lr: {}'.format(lr))
                 print('')
 
-            if (step + 1) % 100 == 0 or step == num_steps - 1:
+            if (step + 1) % 1000 == 0 or step == num_steps - 1:
                 self.saver.save(self.session, checkpoint + str(step) + '.ckpt')
                 print('Saved to {}'.format(checkpoint + str(step) + '.ckpt'))
 

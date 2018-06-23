@@ -1,21 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
+from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
 from neural_nets.neural_net_classification import NeuralNet_Classification
 
 ########################################
 # Set globals
 ########################################
 
-path = '/mnt/ssd/data/deep_learning_fingerprints/sd04/png_txt' #'/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
+path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 HEIGHT = 400
 WIDTH = 275
 BATCH_SIZE = 32
 NUM_STEPS = 1001
+CATEGORIES = 6
 
-bg = BatchGenerator_Classification_NIST(path, HEIGHT, WIDTH)
+bg = BatchGenerator_Classification_Anguli()
 
-nn = NeuralNet_Classification(HEIGHT, WIDTH)
+nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           batchgen=bg,

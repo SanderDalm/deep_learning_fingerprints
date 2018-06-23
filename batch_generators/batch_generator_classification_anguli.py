@@ -91,6 +91,7 @@ class BatchGenerator_Classification_Anguli:
 
 # bg = BatchGenerator_Classification_Anguli()
 # x, y = bg.generate_val_batch(32)
+#
 # import matplotlib.pyplot as plt
 #
 # index = 4
