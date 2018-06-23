@@ -15,7 +15,8 @@ for name in tqdm(file_list):
     new_filename = str(int(number)+100000)+'.jpg'
     new_name = source_path.replace('batch1', 'final')+new_filename
     #print(new_name)
-    rename(name, new_name)
+    shutil.copy(name, new_name)
+
 
 filelist = glob('/home/sander/data/deep_learning_fingerprints/anguli/*/*/*/*')
 len(filelist)
