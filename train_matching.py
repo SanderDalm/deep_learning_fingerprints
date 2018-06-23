@@ -9,7 +9,8 @@ from batch_generators.batch_generator_matching_nist import BatchGenerator_Matchi
 ########################################
 
 path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'##'/mnt/ssd/data/deep_learning_fingerprints/sd04/png_txt'
-IMSIZE = 512
+HEIGHT = 400
+WIDTH = 275
 BATCH_SIZE = 16
 NUM_STEPS = 2001
 
@@ -18,7 +19,7 @@ NUM_STEPS = 2001
 # Train model
 ########################################
 
-bg = BatchGenerator_Matching_NIST(path=path, imsize=IMSIZE)
+bg = BatchGenerator_Matching_NIST(path=path, height=HEIGHT, width=WIDTH)
 
 # Check batch gen output
 for i in range(5):
@@ -35,16 +36,17 @@ for i in range(5):
     #print(y[0])
 
 
-nn = NeuralNet_Matching(imsize=IMSIZE, batchgen=bg, network_type='duos')
+nn = NeuralNet_Matching(height=HEIGHT, width=WIDTH, network_type='duos')
 
 # Record: conv/conv/dropout/pool architectuur, .5 dropout, augment false, lr.0001, decay 1, 900 stappen, 93% acc, 'models/neural_net899.ckpt'
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
-         batch_size=BATCH_SIZE,
-         dropout_rate=0.5,
-         augment=False,
-         lr=.0001,
-         decay=.998)
+                          batchgen=bg,
+                          batch_size=BATCH_SIZE,
+                          dropout_rate=0.5,
+                          augment=False,
+                          lr=.0001,
+                          decay=1)
 
 
 plt.plot(loss, color='b', alpha=.7)
@@ -65,9 +67,9 @@ for _ in range(15):
 
     for triplet in batch:
 
-        anchor = triplet[:, :, 0].reshape([IMSIZE, IMSIZE, 1])
-        pos = triplet[:, :, 1].reshape([IMSIZE, IMSIZE, 1])
-        neg = triplet[:, :, 2].reshape([IMSIZE, IMSIZE, 1])
+        anchor = triplet[:, :, 0].reshape([HEIGHT, WIDTH, 1])
+        pos = triplet[:, :, 1].reshape([HEIGHT, WIDTH, 1])
+        neg = triplet[:, :, 2].reshape([HEIGHT, WIDTH, 1])
 
         embedding_distance_same = nn.predict(image1=anchor,
                                              image2=pos)[1]
@@ -123,7 +125,7 @@ for i in range(15):
     x, y = bg.generate_val_duos(32)
     for img, label in zip(x, y):
         samples += 1
-        pred, _ = nn.predict(img[:, :, 0].reshape(IMSIZE, IMSIZE, 1), img[:, :, 1].reshape(IMSIZE, IMSIZE, 1))
+        pred, _ = nn.predict(img[:, :, 0].reshape(HEIGHT, WIDTH, 1), img[:, :, 1].reshape(HEIGHT, WIDTH, 1))
 
         if np.round(pred, 0) == label:
             correct += 1

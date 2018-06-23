@@ -9,10 +9,11 @@ from skimage.filters import threshold_otsu
 
 class BatchGenerator_Matching_Anguli:
 
-    def __init__(self, path='/media/sander/Data/fingerprints', imsize=None):
+    def __init__(self, path='/media/sander/Data/fingerprints', height=400, width=275):
 
 
-        self.imsize = imsize
+        self.height = height
+        self.width = width
         self.images, self.ids = self.parse_data(path)
         self.sample_ids = list(set([x[1:] for x in self.ids]))
 

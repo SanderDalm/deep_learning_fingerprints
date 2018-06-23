@@ -4,20 +4,19 @@ from neural_nets.tf_utils import Dense, CNN
 
 class NeuralNet_Matching:
 
-    def __init__(self, imsize, batchgen, network_type='triplets'):
+    def __init__(self, height, width, network_type='triplets'):
 
-        self.imsize = imsize
+        self.height = height
+        self.width = width
 
         self.network_type = network_type
-
-        self.batchgen = batchgen
 
         self.graph = tf.Graph()
 
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
         # Feed placeholders
-        self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.imsize, self.imsize, 3], name='input')
+        self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.height, self.width, 1], name='input')
         self.dropout_rate = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
@@ -65,7 +64,7 @@ class NeuralNet_Matching:
                                     name='checkpoint_saver')
 
 
-    def train(self, num_steps, batch_size, dropout_rate, lr, decay, augment, checkpoint='models/neural_net'):
+    def train(self, num_steps, batchgen, batch_size, dropout_rate, lr, decay, augment, checkpoint='models/neural_net'):
 
         loss_list = []
         val_loss_list = []
@@ -73,14 +72,14 @@ class NeuralNet_Matching:
         for step in range(num_steps):
 
             if self.network_type == 'triplets':
-                x_batch = self.batchgen.generate_train_triplets(batch_size, augment)
+                x_batch = batchgen.generate_train_triplets(batch_size, augment)
                 feed_dict = {
                             self.x: x_batch,
                             self.dropout_rate: dropout_rate,
                             self.lr: lr
                             }
             if self.network_type == 'duos':
-                x_batch, y_batch = self.batchgen.generate_train_duos(batch_size, augment)
+                x_batch, y_batch = batchgen.generate_train_duos(batch_size, augment)
                 feed_dict = {
                             self.x: x_batch,
                             self.label: y_batch,
@@ -94,13 +93,13 @@ class NeuralNet_Matching:
 
             if step % 100 == 0:
                 if self.network_type == 'triplets':
-                    x_batch = self.batchgen.generate_val_triplets(batch_size, False)
+                    x_batch = batchgen.generate_val_triplets(batch_size, False)
                     feed_dict = {
                                 self.x: x_batch,
                                 self.dropout_rate: 0
                                 }
                 if self.network_type == 'duos':
-                    x_batch, y_batch = self.batchgen.generate_val_duos(batch_size, False)
+                    x_batch, y_batch = batchgen.generate_val_duos(batch_size, False)
                     feed_dict = {
                         self.x: x_batch,
                         self.label: y_batch,
@@ -127,7 +126,7 @@ class NeuralNet_Matching:
 
         x = np.concatenate([image1, image2, image2],
                            axis=2)  # The second image2 is a placeholder because the network expects triplets
-        x = x.reshape([1, self.imsize, self.imsize, 3])
+        x = x.reshape([1, self.height, self.width, 3])
 
         feed_dict = {
             self.x: x,
