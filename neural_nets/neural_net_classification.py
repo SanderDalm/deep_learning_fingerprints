@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tf_utils import Dense, CNN
+from neural_nets.tf_utils import Dense, CNN
 
 class NeuralNet_Classification:
 

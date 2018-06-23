@@ -7,7 +7,7 @@ from skimage.morphology import skeletonize
 from skimage.util import invert
 from skimage.filters import threshold_otsu
 
-class BatchGenerator_Matching:
+class BatchGenerator_Matching_NIST:
 
     def __init__(self, path, imsize):
 

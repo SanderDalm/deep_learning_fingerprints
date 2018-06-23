@@ -4,7 +4,7 @@ import numpy as np
 from glob import glob
 
 
-class BatchGenerator_Classification:
+class BatchGenerator_Classification_NIST:
 
 
     def __init__(self, path, imsize):

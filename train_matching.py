@@ -1,24 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from neural_net_matching import NeuralNet_Matching
-from batch_generator_matching import BatchGenerator_Matching
+from neural_nets.neural_net_matching import NeuralNet_Matching
+from batch_generators.batch_generator_matching_nist import BatchGenerator_Matching_NIST
 
 ########################################
 # Set globals
 ########################################
 
-path = '/mnt/ssd/data/deep_learning_fingerprints/sd04/png_txt' #'/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
+path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'##'/mnt/ssd/data/deep_learning_fingerprints/sd04/png_txt'
 IMSIZE = 512
-BATCH_SIZE = 32
-NUM_STEPS = 11
+BATCH_SIZE = 16
+NUM_STEPS = 2001
 
 
 ########################################
 # Train model
 ########################################
 
-bg = BatchGenerator_Matching(path=path, imsize=IMSIZE)
+bg = BatchGenerator_Matching_NIST(path=path, imsize=IMSIZE)
 
 # Check batch gen output
 for i in range(5):
@@ -44,7 +44,8 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
          dropout_rate=0.5,
          augment=False,
          lr=.0001,
-         decay=1)
+         decay=.998)
+
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)

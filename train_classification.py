@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from batch_generator_classification import BatchGenerator_Classification
-from neural_net_classification import NeuralNet_Classification
+from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
+from neural_nets.neural_net_classification import NeuralNet_Classification
 
 ########################################
 # Set globals
@@ -12,7 +12,7 @@ IMSIZE = 512
 BATCH_SIZE = 32
 NUM_STEPS = 1001
 
-bg = BatchGenerator_Classification(path, IMSIZE)
+bg = BatchGenerator_Classification_NIST(path, IMSIZE)
 
 nn = NeuralNet_Classification(IMSIZE, bg)
 
