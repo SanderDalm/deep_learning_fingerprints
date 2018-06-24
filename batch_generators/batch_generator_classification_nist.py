@@ -7,9 +7,10 @@ from glob import glob
 class BatchGenerator_Classification_NIST:
 
 
-    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/sd04/png_txt', imsize=512):
+    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/sd04/png_txt', height=512, width=512):
 
-        self.imsize = imsize
+        self.height = height
+        self.width = width
         self.images, self.labels = self.parse_data(path)
         self.images_train, self.labels_train = self.images[:3600], self.labels[:3600]
         self.images_val, self.labels_val = self.images[3600:], self.labels[3600:]
@@ -31,6 +32,7 @@ class BatchGenerator_Classification_NIST:
             label_path = [x for x in file_list if x.find(id) > -1 and x.endswith('txt')][0]
 
             img = imread(image_path)
+            img = imresize(img, [self.height, self.width])
             label_file = open(label_path)
             for line in label_file.readlines():
                 if line.startswith('Class'):
@@ -62,7 +64,7 @@ class BatchGenerator_Classification_NIST:
             x_batch.append(images[index])
             y_batch.append(labels[index])
 
-        return np.array(x_batch).reshape(batch_size, self.imsize, self.imsize, 1), np.array(y_batch)
+        return np.array(x_batch).reshape(batch_size, self.height, self.width, 1), np.array(y_batch)
 
 
     def generate_train_batch(self, batch_size):
@@ -74,8 +76,15 @@ class BatchGenerator_Classification_NIST:
 
         return self.generate_batch(batch_size, self.images_val, self.labels_val)
 
-# bg = BatchGenerator_Classification_NIST()
+# bg = BatchGenerator_Classification_NIST(height=400, width=275)
 #
+# import matplotlib.pyplot as plt
+# x, y = bg.generate_val_batch(32)
+# plt.imshow(x[0].reshape(400, 275), cmap='gray')
+# plt.show()
+
+
+
 # bg.label_dict
 #
 # for i in range(5):

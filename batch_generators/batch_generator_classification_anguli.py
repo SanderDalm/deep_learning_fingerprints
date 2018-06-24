@@ -94,9 +94,9 @@ class BatchGenerator_Classification_Anguli:
 
 
 
-bg = BatchGenerator_Classification_Anguli()
-
-bg.label_dict
+# bg = BatchGenerator_Classification_Anguli()
+#
+# bg.label_dict
 #
 # for i in range(5):
 #     print(np.mean(bg.labels[:, i]))
@@ -115,6 +115,6 @@ bg.label_dict
 #     print(index, label)
 
 
-a = np.array([1,2,3,4])
-indices = a != 3
-a[indices]
+# a = np.array([1,2,3,4])
+# indices = a != 3
+# a[indices]
