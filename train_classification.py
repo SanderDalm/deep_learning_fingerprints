@@ -12,7 +12,7 @@ path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 HEIGHT = 400
 WIDTH = 275
 BATCH_SIZE = 32
-NUM_STEPS = 1001
+NUM_STEPS = 301
 CATEGORIES = 5
 
 bg_anguli = BatchGenerator_Classification_Anguli(height=HEIGHT, width=WIDTH)
@@ -21,7 +21,7 @@ bg_nist = BatchGenerator_Classification_NIST(height=HEIGHT, width=WIDTH)
 nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
-                          batchgen=bg_anguli,
+                          batchgen=bg_nist,
                           batch_size=BATCH_SIZE,
                           dropout_rate=0.5,
                           lr=.0001,
@@ -37,26 +37,27 @@ plt.show()
 # Determine acc
 ########################################
 
-samples = 0
-correct = 0
-for i in range(10):
-    x, y = bg.generate_train_batch(32)
-    for img, label in zip(x, y):
-        samples += 1
-        pred = nn.predict(img)
-        if np.argmax(pred) == np.argmax(label):
-            correct += 1
+def get_acc(bg, train_val):
 
-print('Train acc: {}'.format(correct/samples))
+    samples = 0
+    correct = 0
+    for i in range(10):
+        if train_val == 'train':
+            x, y = bg.generate_train_batch(32)
+        if train_val == 'val':
+            x, y = bg.generate_val_batch(32)
+        for img, label in zip(x, y):
+            samples += 1
+            pred = nn.predict(img)
+            if np.argmax(pred) == np.argmax(label):
+                correct += 1
 
-samples = 0
-correct = 0
-for i in range(10):
-    x, y = bg.generate_val_batch(32)
-    for img, label in zip(x, y):
-        samples += 1
-        pred = nn.predict(img)
-        if np.argmax(pred) == np.argmax(label):
-            correct += 1
+    print('{} acc: {}'.format(train_val, correct/samples))
 
-print('Val acc: {}'.format(correct/samples))
+print('NIST')
+get_acc(bg_nist, 'train')
+get_acc(bg_nist, 'val')
+print('')
+print('Anguli')
+get_acc(bg_anguli, 'train')
+get_acc(bg_anguli, 'val')

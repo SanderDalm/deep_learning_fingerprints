@@ -62,7 +62,7 @@ class NeuralNet_Classification:
             loss_, _ = self.session.run([self.loss, self.train_step], feed_dict=feed_dict)
             lr *= decay
 
-            if step % 1000 == 0:
+            if step % 100 == 0:
                 x_batch, y_batch = batchgen.generate_val_batch(batch_size)
                 feed_dict = {
                             self.x: x_batch,
@@ -79,7 +79,7 @@ class NeuralNet_Classification:
                 print('lr: {}'.format(lr))
                 print('')
 
-            if (step + 1) % 1000 == 0 or step == num_steps - 1:
+            if (step + 1) % 100 == 0 or step == num_steps - 1:
                 self.saver.save(self.session, checkpoint + str(step) + '.ckpt')
                 print('Saved to {}'.format(checkpoint + str(step) + '.ckpt'))
 

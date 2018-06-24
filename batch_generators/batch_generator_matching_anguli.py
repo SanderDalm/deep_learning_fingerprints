@@ -44,7 +44,7 @@ class BatchGenerator_Matching_Anguli:
             # img = invert(img)
             # img = skeletonize(img)
 
-            img = img.reshape([self.imsize, self.imsize, 1])
+            img = img.reshape([self.heigth, self.width, 1])
             images.append(img)
 
         return images, ids
