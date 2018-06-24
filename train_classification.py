@@ -27,6 +27,7 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           lr=.0001,
                           decay=1)
 
+#nn.load_weights('models/neural_net799.ckpt')
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)
