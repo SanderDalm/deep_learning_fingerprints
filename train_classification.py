@@ -13,9 +13,10 @@ HEIGHT = 400
 WIDTH = 275
 BATCH_SIZE = 32
 NUM_STEPS = 1001
-CATEGORIES = 6
+CATEGORIES = 5
 
-bg = BatchGenerator_Classification_Anguli()
+bg = BatchGenerator_Classification_Anguli(height=HEIGHT, width=WIDTH)
+bg = BatchGenerator_Classification_NIST(height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 

@@ -9,15 +9,15 @@ from glob import glob
 class BatchGenerator_Classification_Anguli:
 
 
-    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/anguli/final/', height=400, width=275):
+    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/anguli/final/', height=400, width=275, n_train=130000):
 
         self.path = path
         self.height = height
         self.width = width
 
         self.image_ids, self.labels = self.parse_data()
-        self.image_ids_train, self.labels_train = self.image_ids[:150000], self.labels[:150000]
-        self.image_ids_val, self.labels_val = self.image_ids[150000:], self.labels[150000:]
+        self.image_ids_train, self.labels_train = self.image_ids[:n_train], self.labels[:n_train]
+        self.image_ids_val, self.labels_val = self.image_ids[n_train:], self.labels[n_train:]
 
 
     def parse_data(self):
@@ -34,6 +34,7 @@ class BatchGenerator_Classification_Anguli:
 
         if os.path.exists('labels.p'):
             labels_one_hot = pickle.load(open('labels.p', 'rb'))
+
         else:
             labels = []
             for meta_id in tqdm(meta_ids):
@@ -44,7 +45,8 @@ class BatchGenerator_Classification_Anguli:
                     for line in doc.readlines():
                         if line.startswith('Type'):
                             label = line[7:].strip('\n')
-                            if label == 'Double Loop': # We don't include the double loop
+                            if label == 'Double Loop':
+                                image_ids.remove(meta_id)
                                 continue
                             else:
                                 labels.append(label)
@@ -55,7 +57,6 @@ class BatchGenerator_Classification_Anguli:
             labels_tokenized = [self.label_dict[x] for x in labels]
             n_values = np.max(tokens) + 1
             labels_one_hot = np.eye(n_values)[labels_tokenized]
-
             pickle.dump(labels_one_hot, open('labels.p', 'wb'))
 
         return image_ids, labels_one_hot
@@ -93,17 +94,18 @@ class BatchGenerator_Classification_Anguli:
 
 
 
-# bg = BatchGenerator_Classification_Anguli()
-#
-# bg.label_dict
+bg = BatchGenerator_Classification_Anguli()
+
+bg.label_dict
 #
 # for i in range(5):
 #     print(np.mean(bg.labels[:, i]))
 #
 #
 # import matplotlib.pyplot as plt
-# x, y = bg.generate_val_batch(32)
-#
+#x, y = bg.generate_val_batch(32)
+
+
 # index = 20
 # plt.imshow(x[index].reshape(400, 275), cmap='gray')
 # plt.show()
@@ -111,3 +113,8 @@ class BatchGenerator_Classification_Anguli:
 #
 # for index, label in enumerate(y):
 #     print(index, label)
+
+
+a = np.array([1,2,3,4])
+indices = a != 3
+a[indices]
