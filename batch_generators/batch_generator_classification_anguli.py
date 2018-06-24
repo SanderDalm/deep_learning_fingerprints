@@ -32,8 +32,8 @@ class BatchGenerator_Classification_Anguli:
         meta_ids.sort()
 
 
-        if os.path.exists('labels.p'):
-            labels_one_hot = pickle.load(open('labels.p', 'rb'))
+        if os.path.exists('ids_and_labels.p'):
+            image_ids, labels_one_hot = pickle.load(open('ids_and_labels.p', 'rb'))
 
         else:
             labels = []
@@ -57,7 +57,7 @@ class BatchGenerator_Classification_Anguli:
             labels_tokenized = [self.label_dict[x] for x in labels]
             n_values = np.max(tokens) + 1
             labels_one_hot = np.eye(n_values)[labels_tokenized]
-            pickle.dump(labels_one_hot, open('labels.p', 'wb'))
+            pickle.dump((image_ids, labels_one_hot), open('ids_and_labels.p', 'wb'))
 
         return image_ids, labels_one_hot
 
@@ -96,6 +96,12 @@ class BatchGenerator_Classification_Anguli:
 
 # bg = BatchGenerator_Classification_Anguli()
 #
+# len(bg.image_ids_train)
+# len(bg.labels_train)
+# len(bg.image_ids_val)
+# len(bg.labels_val)
+
+
 # bg.label_dict
 #
 # for i in range(5):

@@ -15,13 +15,13 @@ BATCH_SIZE = 32
 NUM_STEPS = 1001
 CATEGORIES = 5
 
-bg = BatchGenerator_Classification_Anguli(height=HEIGHT, width=WIDTH)
-bg = BatchGenerator_Classification_NIST(height=HEIGHT, width=WIDTH)
+bg_anguli = BatchGenerator_Classification_Anguli(height=HEIGHT, width=WIDTH)
+bg_nist = BatchGenerator_Classification_NIST(height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
-                          batchgen=bg,
+                          batchgen=bg_anguli,
                           batch_size=BATCH_SIZE,
                           dropout_rate=0.5,
                           lr=.0001,
