@@ -7,7 +7,7 @@ from glob import glob
 class BatchGenerator_Classification_NIST:
 
 
-    def __init__(self, path, imsize):
+    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/sd04/png_txt', imsize=512):
 
         self.imsize = imsize
         self.images, self.labels = self.parse_data(path)
@@ -42,7 +42,8 @@ class BatchGenerator_Classification_NIST:
 
         # Tokenize labels
         tokens = list(range(len(set(labels))))
-        self.label_dict = {key: value for key, value in zip(set(labels), tokens)}
+        label_types = sorted(list(set(labels)))
+        self.label_dict = {key: value for key, value in zip(label_types, tokens)}
         labels_tokenized = [self.label_dict[x] for x in labels]
         n_values = np.max(tokens) + 1
         labels_one_hot = np.eye(n_values)[labels_tokenized]
@@ -73,3 +74,9 @@ class BatchGenerator_Classification_NIST:
 
         return self.generate_batch(batch_size, self.images_val, self.labels_val)
 
+# bg = BatchGenerator_Classification_NIST()
+#
+# bg.label_dict
+#
+# for i in range(5):
+#     print(np.mean(bg.labels[:, i]))

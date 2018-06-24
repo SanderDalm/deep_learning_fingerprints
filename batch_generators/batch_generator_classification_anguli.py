@@ -33,7 +33,7 @@ class BatchGenerator_Classification_Anguli:
 
 
         if os.path.exists('labels.p'):
-            labels = pickle.load(open('labels.p', 'rb'))
+            labels_one_hot = pickle.load(open('labels.p', 'rb'))
         else:
             labels = []
             for meta_id in tqdm(meta_ids):
@@ -44,17 +44,21 @@ class BatchGenerator_Classification_Anguli:
                     for line in doc.readlines():
                         if line.startswith('Type'):
                             label = line[7:].strip('\n')
-                            labels.append(label)
+                            if label == 'Double Loop': # We don't include the double loop
+                                continue
+                            else:
+                                labels.append(label)
             # Tokenize labels
             tokens = list(range(len(set(labels))))
-            label_dict = {key: value for key, value in zip(sorted(set(labels)), tokens)}
-            labels_tokenized = [label_dict[x] for x in labels]
+            label_types = sorted(list(set(labels)))
+            self.label_dict = {key: value for key, value in zip(label_types, tokens)}
+            labels_tokenized = [self.label_dict[x] for x in labels]
             n_values = np.max(tokens) + 1
             labels_one_hot = np.eye(n_values)[labels_tokenized]
 
             pickle.dump(labels_one_hot, open('labels.p', 'wb'))
 
-        return image_ids, labels
+        return image_ids, labels_one_hot
 
 
     def generate_batch(self, batch_size, image_ids, labels):
@@ -90,11 +94,20 @@ class BatchGenerator_Classification_Anguli:
 
 
 # bg = BatchGenerator_Classification_Anguli()
-# x, y = bg.generate_val_batch(32)
+#
+# bg.label_dict
+#
+# for i in range(5):
+#     print(np.mean(bg.labels[:, i]))
+#
 #
 # import matplotlib.pyplot as plt
+# x, y = bg.generate_val_batch(32)
 #
-# index = 4
+# index = 20
 # plt.imshow(x[index].reshape(400, 275), cmap='gray')
 # plt.show()
 # print(y[index])
+#
+# for index, label in enumerate(y):
+#     print(index, label)
