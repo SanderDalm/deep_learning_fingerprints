@@ -12,7 +12,7 @@ path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
 HEIGHT = 400
 WIDTH = 275
 BATCH_SIZE = 32
-NUM_STEPS = 301
+NUM_STEPS = 1001
 CATEGORIES = 5
 
 bg_anguli = BatchGenerator_Classification_Anguli(height=HEIGHT, width=WIDTH)

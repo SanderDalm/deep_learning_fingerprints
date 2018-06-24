@@ -16,6 +16,9 @@ class BatchGenerator_Classification_Anguli:
         self.width = width
 
         self.image_ids, self.labels = self.parse_data()
+        shuffled_indices = list(range(len(self.image_ids)))
+        np.random.shuffle(shuffled_indices)
+        self.image_ids, self.labels = self.image_ids[shuffled_indices], self.labels[shuffled_indices]
         self.image_ids_train, self.labels_train = self.image_ids[:n_train], self.labels[:n_train]
         self.image_ids_val, self.labels_val = self.image_ids[n_train:], self.labels[n_train:]
 
@@ -59,7 +62,7 @@ class BatchGenerator_Classification_Anguli:
             labels_one_hot = np.eye(n_values)[labels_tokenized]
             pickle.dump((image_ids, labels_one_hot), open('ids_and_labels.p', 'wb'))
 
-        return image_ids, labels_one_hot
+        return np.array(image_ids), labels_one_hot
 
 
     def generate_batch(self, batch_size, image_ids, labels):

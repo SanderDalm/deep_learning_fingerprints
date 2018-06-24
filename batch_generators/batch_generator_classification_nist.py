@@ -7,13 +7,17 @@ from glob import glob
 class BatchGenerator_Classification_NIST:
 
 
-    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/sd04/png_txt', height=512, width=512):
+    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/sd04/png_txt', height=512, width=512, n_train=3800):
 
         self.height = height
         self.width = width
+
         self.images, self.labels = self.parse_data(path)
-        self.images_train, self.labels_train = self.images[:3600], self.labels[:3600]
-        self.images_val, self.labels_val = self.images[3600:], self.labels[3600:]
+        shuffled_indices = list(range(len(self.images)))
+        np.random.shuffle(shuffled_indices)
+        self.images, self.labels = self.images[shuffled_indices], self.labels[shuffled_indices]
+        self.images_train, self.labels_train = self.images[:n_train], self.labels[:n_train]
+        self.images_val, self.labels_val = self.images[n_train:], self.labels[n_train:]
 
 
     def parse_data(self, path):
@@ -50,7 +54,7 @@ class BatchGenerator_Classification_NIST:
         n_values = np.max(tokens) + 1
         labels_one_hot = np.eye(n_values)[labels_tokenized]
 
-        return images, labels_one_hot
+        return np.array(images), labels_one_hot
 
 
     def generate_batch(self, batch_size, images, labels):
