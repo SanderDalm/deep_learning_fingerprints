@@ -23,6 +23,12 @@ def Conv2D(x, filters, kernel_size, stride, padding='same'):
 
 def CNN(x, dropout_rate=None):
 
+    # x = tf.image.resize_images(x, [299, 299])
+    # #x = tf.image.grayscale_to_rgb(x)
+    # x = tf.concat([x, x, x], axis=3)
+    # model = tf.keras.applications.inception_v3.InceptionV3(include_top=False, pooling='max', weights=None)
+    # return model(x)
+
     x = Conv2D(x, 16, 3, 1)
     x = Conv2D(x, 16, 3, 1)
     x = tf.layers.dropout(inputs=x, rate=dropout_rate)
@@ -55,7 +61,7 @@ def CNN(x, dropout_rate=None):
 
 def augment(images):
 
-    noise = tf.random_normal(shape=tf.shape(images), mean=0.0, stddev=0.2,
+    noise = tf.random_normal(shape=tf.shape(images), mean=0.0, stddev=0.1,
                              dtype=tf.float32)
     images = tf.add(images, noise)
 
@@ -70,10 +76,11 @@ def augment(images):
 # tf.enable_eager_execution()
 #
 # from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
+# from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
 # import matplotlib.pyplot as plt
 # import numpy as np
 #
-# bg = BatchGenerator_Classification_Anguli()
+# bg = BatchGenerator_Classification_NIST()
 #
 # x, y = bg.generate_train_batch(1)
 # np.min(x)
@@ -84,5 +91,15 @@ def augment(images):
 # np.max(x2)
 #
 # together = np.concatenate([x, x2], axis=1)
-# plt.imshow(together.reshape(800, 275), cmap='gray')
+# plt.imshow(together.reshape(1024, 512), cmap='gray')
+# plt.show()
+#
+#
+# x2 = tf.image.resize_images(x, [299, 299])
+#
+#
+# plt.imshow(x.reshape(512, 512), cmap='gray')
+# plt.show()
+#
+# plt.imshow(np.array(x2).reshape(299, 299), cmap='gray')
 # plt.show()

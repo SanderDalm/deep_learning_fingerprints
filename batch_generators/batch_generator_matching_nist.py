@@ -33,17 +33,10 @@ class BatchGenerator_Matching_NIST:
             image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
 
             img = imread(image_path)
-
             img = img / 255
-
-            #filt_real, img = gabor(img, frequency=0.6)
-
-            # thresh = threshold_otsu(img)
-            # img = img > thresh
-            # img = invert(img)
-            # img = skeletonize(img)
-
-            img = img.reshape([self.imsize, self.imsize, 1])
+            if self.height != 512 or self.width != 512:
+                img = imresize(img, [self.height, self.width])
+            img = img.reshape([self.height, self.width, 1])
             images.append(img)
 
         return images, ids

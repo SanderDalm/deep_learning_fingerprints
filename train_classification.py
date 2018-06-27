@@ -9,10 +9,10 @@ from neural_nets.neural_net_classification import NeuralNet_Classification
 ########################################
 
 path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
-HEIGHT = 400
-WIDTH = 275
+HEIGHT = 512
+WIDTH = 512
 BATCH_SIZE = 32
-NUM_STEPS = 1001
+NUM_STEPS = 3001
 CATEGORIES = 5
 
 bg_anguli = BatchGenerator_Classification_Anguli(height=HEIGHT, width=WIDTH)

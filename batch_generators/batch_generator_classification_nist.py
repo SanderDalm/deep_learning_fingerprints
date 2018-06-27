@@ -36,7 +36,8 @@ class BatchGenerator_Classification_NIST:
             label_path = [x for x in file_list if x.find(id) > -1 and x.endswith('txt')][0]
 
             img = imread(image_path)
-            img = imresize(img, [self.height, self.width])
+            if self.height != 512 or self.width != 512:
+                img = imresize(img, [self.height, self.width])
             label_file = open(label_path)
             for line in label_file.readlines():
                 if line.startswith('Class'):

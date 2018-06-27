@@ -34,9 +34,7 @@ class BatchGenerator_Matching_Anguli:
             image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
 
             img = imread(image_path)
-
             img = img / 255
-
             img = img.reshape([self.heigth, self.width, 1])
             images.append(img)
 

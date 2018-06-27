@@ -78,7 +78,8 @@ class BatchGenerator_Classification_Anguli:
             else:
                 image = imread(self.path+'Impression_2/fp_1/' + str(image_ids[index]) + '.jpg')
 
-            image = imresize(image, [self.height, self.width])
+            if self.height != 400 or self.width != 275:
+                image = imresize(image, [self.height, self.width])
             image = image / 255
             x_batch.append(image)
             y_batch.append(labels[index])
