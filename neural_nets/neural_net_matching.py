@@ -78,7 +78,7 @@ class NeuralNet_Matching:
         for step in range(num_steps):
 
             if self.network_type == 'triplets':
-                x_batch = batchgen.generate_train_triplets(batch_size, augment)
+                x_batch = batchgen.generate_train_triplets(batch_size)
                 feed_dict = {
                             self.x: x_batch,
                             self.dropout_rate: dropout_rate,
@@ -86,7 +86,7 @@ class NeuralNet_Matching:
                             self.lr: lr
                             }
             if self.network_type == 'duos':
-                x_batch, y_batch = batchgen.generate_train_duos(batch_size, augment)
+                x_batch, y_batch = batchgen.generate_train_duos(batch_size)
                 feed_dict = {
                             self.x: x_batch,
                             self.label: y_batch,
@@ -101,14 +101,14 @@ class NeuralNet_Matching:
 
             if step % 1000 == 0:
                 if self.network_type == 'triplets':
-                    x_batch = batchgen.generate_val_triplets(batch_size, False)
+                    x_batch = batchgen.generate_val_triplets(batch_size)
                     feed_dict = {
                                 self.x: x_batch,
                                 self.dropout_rate: 0,
                                 self.augment: 0
                                 }
                 if self.network_type == 'duos':
-                    x_batch, y_batch = batchgen.generate_val_duos(batch_size, False)
+                    x_batch, y_batch = batchgen.generate_val_duos(batch_size)
                     feed_dict = {
                         self.x: x_batch,
                         self.label: y_batch,

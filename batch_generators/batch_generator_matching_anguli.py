@@ -37,20 +37,13 @@ class BatchGenerator_Matching_Anguli:
 
             img = img / 255
 
-            #filt_real, img = gabor(img, frequency=0.6)
-
-            # thresh = threshold_otsu(img)
-            # img = img > thresh
-            # img = invert(img)
-            # img = skeletonize(img)
-
             img = img.reshape([self.heigth, self.width, 1])
             images.append(img)
 
         return images, ids
 
 
-    def generate_triplet_batch(self, batch_size, candidate_ids, augment):
+    def generate_triplet_batch(self, batch_size, candidate_ids):
 
         batch = []
 
@@ -68,24 +61,13 @@ class BatchGenerator_Matching_Anguli:
 
             anchor_img, pos_img, neg_img = self.images[anchor_index], self.images[pos_index], self.images[neg_index]
 
-            if augment:
-                rotation = np.random.randint(0, 4)
-                anchor_img, pos_img, neg_img = np.rot90(anchor_img, rotation), np.rot90(pos_img, rotation), np.rot90(neg_img, rotation)
-
-                if np.random.rand() > .5:
-                    anchor_img, pos_img, neg_img = np.fliplr(anchor_img), np.fliplr(pos_img), np.fliplr(neg_img)
-
-                # anchor_img += np.random.normal(0, .1, size=anchor_img.shape)
-                # pos_img += np.random.normal(0, .1, size=pos_img.shape)
-                # neg_img += np.random.normal(0, .1, size=neg_img.shape)
-
             triplet = np.concatenate([anchor_img, pos_img, neg_img], axis=2)
             batch.append(triplet)
 
         return np.array(batch)
 
 
-    def generate_duo_batch_with_labels(self, batch_size, candidate_ids, augment):
+    def generate_duo_batch_with_labels(self, batch_size, candidate_ids):
 
         x_batch = []
         y_batch = []
@@ -115,16 +97,6 @@ class BatchGenerator_Matching_Anguli:
 
             anchor_img = self.images[anchor_index]
             partner_img = self.images[partner_index]
-
-            if augment:
-                rotation = np.random.randint(0, 4)
-                anchor_img, partner_img = np.rot90(anchor_img, rotation), np.rot90(partner_img, rotation)
-
-                if np.random.rand() > .5:
-                    anchor_img, partner_img = np.fliplr(anchor_img), np.fliplr(partner_img)
-
-                #anchor_img += np.random.normal(0, .1, size=anchor_img.shape)
-                #partner_img += np.random.normal(0, .1, size=partner_img.shape)
 
             duo = np.concatenate([anchor_img, partner_img, partner_img], axis=2)
 
