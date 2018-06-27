@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from neural_nets.tf_utils import Dense, CNN
+from neural_nets.tf_utils import Dense, CNN, augment
 
 class NeuralNet_Matching:
 
@@ -18,16 +18,22 @@ class NeuralNet_Matching:
         # Feed placeholders
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.height, self.width, 1], name='input')
         self.dropout_rate = tf.placeholder(tf.float32)
+        self.augment = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
         # Split inputs
         self.anchor, self.pos, self.neg = tf.split(self.x, 3, axis=3)
 
 
-        # Standardization
+        # Standardization and augmentation
         self.anchor = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.anchor)
+        self.anchor = tf.cond(self.augment > 0, lambda: augment(self.anchor), lambda: self.anchor)
+
         self.pos = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.pos)
+        self.pos = tf.cond(self.augment > 0, lambda: augment(self.pos), lambda: self.pos)
+
         self.neg = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.neg)
+        self.neg = tf.cond(self.augment > 0, lambda: augment(self.neg), lambda: self.neg)
 
 
         # Run the network
@@ -64,7 +70,7 @@ class NeuralNet_Matching:
                                     name='checkpoint_saver')
 
 
-    def train(self, num_steps, batchgen, batch_size, dropout_rate, lr, decay, augment, checkpoint='models/neural_net'):
+    def train(self, num_steps, batchgen, batch_size, dropout_rate, augment, lr, decay, checkpoint='models/neural_net'):
 
         loss_list = []
         val_loss_list = []
@@ -76,6 +82,7 @@ class NeuralNet_Matching:
                 feed_dict = {
                             self.x: x_batch,
                             self.dropout_rate: dropout_rate,
+                            self.augment: augment,
                             self.lr: lr
                             }
             if self.network_type == 'duos':
@@ -84,6 +91,7 @@ class NeuralNet_Matching:
                             self.x: x_batch,
                             self.label: y_batch,
                             self.dropout_rate: dropout_rate,
+                            self.augment: augment,
                             self.lr: lr
                             }
 
@@ -96,15 +104,16 @@ class NeuralNet_Matching:
                     x_batch = batchgen.generate_val_triplets(batch_size, False)
                     feed_dict = {
                                 self.x: x_batch,
-                                self.dropout_rate: 0
+                                self.dropout_rate: 0,
+                                self.augment: 0
                                 }
                 if self.network_type == 'duos':
                     x_batch, y_batch = batchgen.generate_val_duos(batch_size, False)
                     feed_dict = {
                         self.x: x_batch,
                         self.label: y_batch,
-                        self.dropout_rate: dropout_rate,
-
+                        self.dropout_rate: 0,
+                        self.augment: 0
                                 }
                 val_loss = self.session.run([self.loss], feed_dict=feed_dict)
                 val_loss_list.append(val_loss)
@@ -130,7 +139,8 @@ class NeuralNet_Matching:
 
         feed_dict = {
             self.x: x,
-            self.dropout_rate: 0
+            self.dropout_rate: 0,
+            self.augment: 0
             }
 
         if self.network_type == 'duos':
@@ -140,9 +150,6 @@ class NeuralNet_Matching:
             anchor_embedding, partner_embedding = self.session.run(
                 [self.anchor_embedding, self.pos_embedding], feed_dict=feed_dict)
             return None, np.linalg.norm(anchor_embedding - partner_embedding, axis=1)[0]
-
-
-
 
 
     def load_weights(self, path):

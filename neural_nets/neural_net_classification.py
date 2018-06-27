@@ -1,5 +1,5 @@
 import tensorflow as tf
-from neural_nets.tf_utils import Dense, CNN
+from neural_nets.tf_utils import Dense, CNN, augment
 
 class NeuralNet_Classification:
 
@@ -15,13 +15,16 @@ class NeuralNet_Classification:
         # Feed placeholders
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.height, self.width, 1], name='input')
         self.dropout_rate = tf.placeholder(tf.float32)
+        self.augment = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
 
-        # Standardization
+
+        # Standardization and augmentation
         self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
+        self.cnn_input = tf.cond(self.augment > 0, lambda: augment(self.x_standardized), lambda: self.x_standardized)
 
         # Run the network
-        self.cnn_output = CNN(self.x_standardized, self.dropout_rate)
+        self.cnn_output = CNN(self.cnn_input, self.dropout_rate)
 
         self.fc1 = Dense(self.cnn_output, 256, tf.nn.relu)
         self.fc1 = tf.layers.dropout(inputs=self.fc1, rate=self.dropout_rate)
@@ -43,7 +46,7 @@ class NeuralNet_Classification:
                                     name='checkpoint_saver')
 
 
-    def train(self, num_steps, batchgen, batch_size, dropout_rate, lr, decay, checkpoint='models/neural_net'):
+    def train(self, num_steps, batchgen, batch_size, dropout_rate, augment, lr, decay, checkpoint='models/neural_net'):
 
         loss_list = []
         val_loss_list = []
@@ -56,6 +59,7 @@ class NeuralNet_Classification:
                         self.x: x_batch,
                         self.label: y_batch,
                         self.dropout_rate: dropout_rate,
+                        self.augment: augment,
                         self.lr: lr
                         }
 
@@ -67,7 +71,8 @@ class NeuralNet_Classification:
                 feed_dict = {
                             self.x: x_batch,
                             self.label: y_batch,
-                            self.dropout_rate: 0
+                            self.dropout_rate: 0,
+                            self.augment: 0
                             }
 
                 val_loss = self.session.run([self.loss], feed_dict=feed_dict)
@@ -90,7 +95,8 @@ class NeuralNet_Classification:
 
         feed_dict = {
             self.x: image.reshape(1, self.height, self.width, 1),
-            self.dropout_rate: 0
+            self.dropout_rate: 0,
+            self.augment: 0
         }
         pred = self.session.run([self.prediction], feed_dict=feed_dict)
 

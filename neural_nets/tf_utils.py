@@ -51,3 +51,38 @@ def CNN(x, dropout_rate=None):
     flatten = tf.layers.flatten(x)
 
     return tf.layers.dropout(inputs=flatten, rate=dropout_rate)
+
+
+def augment(images):
+
+    noise = tf.random_normal(shape=tf.shape(images), mean=0.0, stddev=0.2,
+                             dtype=tf.float32)
+    images = tf.add(images, noise)
+
+    images = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=1.), images)
+    images = tf.map_fn(lambda img: tf.image.random_contrast(img, lower=0, upper=1), images)
+
+    return images
+
+
+# Test augmentation
+
+# tf.enable_eager_execution()
+#
+# from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
+# import matplotlib.pyplot as plt
+# import numpy as np
+#
+# bg = BatchGenerator_Classification_Anguli()
+#
+# x, y = bg.generate_train_batch(1)
+# np.min(x)
+# np.max(x)
+#
+# x2 = augment(x)
+# np.min(x2)
+# np.max(x2)
+#
+# together = np.concatenate([x, x2], axis=1)
+# plt.imshow(together.reshape(800, 275), cmap='gray')
+# plt.show()
