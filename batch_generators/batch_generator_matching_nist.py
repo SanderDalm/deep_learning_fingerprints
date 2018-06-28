@@ -5,9 +5,9 @@ from glob import glob
 
 class BatchGenerator_Matching_NIST:
 
-    def __init__(self, path, imsize):
+    def __init__(self, path, height=512, width=512):
 
-        self.imsize = imsize
+        self.height, self.width, = height, width
         self.images, self.ids = self.parse_data(path)
         self.sample_ids = list(set([x[1:] for x in self.ids]))
 
@@ -16,13 +16,26 @@ class BatchGenerator_Matching_NIST:
 
     def parse_data(self):
 
-        file_list = glob(self.path+'/*'+'Impression_1/'+'*.jpg')
+        file_list = glob(self.path + '/*' + '/*')
+
         ids = list(set([x[:-4].split('/')[-1] for x in file_list]))
+        ids.remove('Thumb')
 
-        return ids
+        images = []
+
+        for id in tqdm(ids):
+            image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
+            img = imread(image_path)
+            if self.height != 512 or self.width != 512:
+                img = imresize(img, [self.height, self.width])
+            img = img.reshape([self.height, self.width, 1])
+            img = img / 255
+            images.append(img)
+
+        return images, ids
 
 
-    def generate_triplet_batch(self, batch_size, candidate_ids, augment):
+    def generate_triplet_batch(self, batch_size, candidate_ids):
 
         batch = []
 
@@ -34,8 +47,8 @@ class BatchGenerator_Matching_NIST:
             if np.random.rand() < .5:
                 anchor_index, pos_index = pos_index, anchor_index
 
-            neg_candidate_ids = ['f' + x for x in candidate_ids if x != anchor_id]+['s' + x for x in candidate_ids if x != anchor_id]
-            neg_id = np.random.choice(neg_candidate_ids)
+            candidate_ids.remove(anchor_id)
+            neg_id = np.random.choice(candidate_ids)
             neg_index = self.ids.index(neg_id)
 
             anchor_img, pos_img, neg_img = self.images[anchor_index], self.images[pos_index], self.images[neg_index]
@@ -46,7 +59,7 @@ class BatchGenerator_Matching_NIST:
         return np.array(batch)
 
 
-    def generate_duo_batch_with_labels(self, batch_size, candidate_ids, augment):
+    def generate_duo_batch_with_labels(self, batch_size, candidate_ids):
 
         x_batch = []
         y_batch = []
@@ -54,7 +67,6 @@ class BatchGenerator_Matching_NIST:
         for _ in range(batch_size):
 
             anchor_id = np.random.choice(candidate_ids)
-
             anchor_index = self.ids.index('f' + anchor_id)
             partner_index = self.ids.index('s' + anchor_id)
 
@@ -66,13 +78,10 @@ class BatchGenerator_Matching_NIST:
 
             # neg case
             else:
-                neg_candidate_ids = ['f' + x for x in candidate_ids if x != anchor_id] + ['s' + x for x in
-                                                                                          candidate_ids if
-                                                                                                x != anchor_id]
-                neg_id = np.random.choice(neg_candidate_ids)
+                candidate_ids.remove(anchor_id)
+                neg_id = np.random.choice(candidate_ids)
                 partner_index = self.ids.index(neg_id)
                 label = 0
-
 
             anchor_img = self.images[anchor_index]
             partner_img = self.images[partner_index]
@@ -85,18 +94,18 @@ class BatchGenerator_Matching_NIST:
         return np.array(x_batch), np.array(y_batch).reshape(batch_size, 1)
 
 
-    def generate_train_triplets(self, batch_size, augment=True):
+    def generate_train_triplets(self, batch_size):
 
-        return self.generate_triplet_batch(batch_size, self.sample_ids_train, augment)
+        return self.generate_triplet_batch(batch_size, self.sample_ids_train)
 
-    def generate_val_triplets(self, batch_size, augment=False):
+    def generate_val_triplets(self, batch_size):
 
-        return self.generate_triplet_batch(batch_size, self.sample_ids_val, augment)
+        return self.generate_triplet_batch(batch_size, self.sample_ids_val)
 
-    def generate_train_duos(self, batch_size, augment=True):
+    def generate_train_duos(self, batch_size):
 
-        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_train, augment)
+        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_train)
 
-    def generate_val_duos(self, batch_size, augment=False):
+    def generate_val_duos(self, batch_size):
 
-        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_val, augment)
+        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_val)

@@ -83,9 +83,8 @@ class BatchGenerator_Matching_Anguli:
                 if np.random.rand() < .5:
                     partner = self.read_image(self.path + 'Impression_1/fp_1/' + str(neg_id) + '.jpg')
                 else:
-                    partner = self.read_image(self.path + 'Impression_1/fp_1/' + str(neg_id) + '.jpg')
+                    partner = self.read_image(self.path + 'Impression_2/fp_1/' + str(neg_id) + '.jpg')
                 label = 0
-
 
             duo = np.concatenate([anchor, partner, partner], axis=2)
 
