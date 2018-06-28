@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 
 from neural_nets.neural_net_matching import NeuralNet_Matching
 from batch_generators.batch_generator_matching_nist import BatchGenerator_Matching_NIST
+import config
 
 ########################################
 # Set globals
 ########################################
 
-path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'##'/mnt/ssd/data/deep_learning_fingerprints/sd04/png_txt'
+DATAPATH = config.datadir
 HEIGHT = 400
 WIDTH = 275
 BATCH_SIZE = 16
@@ -19,7 +20,7 @@ NUM_STEPS = 2001
 # Train model
 ########################################
 
-bg = BatchGenerator_Matching_NIST(path=path, height=HEIGHT, width=WIDTH)
+bg = BatchGenerator_Matching_NIST(path=DATAPATh, height=HEIGHT, width=WIDTH)
 
 # Check batch gen output
 for i in range(5):

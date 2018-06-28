@@ -2,43 +2,33 @@ from tqdm import tqdm
 from scipy.misc import imread, imresize
 import numpy as np
 from glob import glob
-from skimage.filters import gabor
-from skimage.morphology import skeletonize
-from skimage.util import invert
-from skimage.filters import threshold_otsu
 
 class BatchGenerator_Matching_Anguli:
 
-    def __init__(self, path='/media/sander/Data/fingerprints', height=400, width=275):
-
+    def __init__(self, path=None, height=400, width=275, n_train=130000):
 
         self.height = height
         self.width = width
-        self.images, self.ids = self.parse_data(path)
-        self.sample_ids = list(set([x[1:] for x in self.ids]))
 
-        self.sample_ids_train = self.sample_ids[:1600]
-        self.sample_ids_val = self.sample_ids[1600:]
+        self.ids = self.parse_data(path)
+        shuffled_indices = list(range(len(self.ids)))
+        np.random.shuffle(shuffled_indices)
+        self.ids = self.ids[shuffled_indices]
+        self.ids_train = self.ids[:n_train]
+        self.ids_val = self.ids[n_train:]
 
-    def parse_data(self, path):
+    def parse_data(self):
 
+        images = glob(self.path + 'Impression_*/fp_1/*.png')
+        ids = list(set([int(x[:-4].split('/')[-1]) for x in images]))
+        return np.array(ids)
 
-        file_list = glob(path+'/*'+'/*')
+    def read_image(self, path):
 
-        ids = list(set([x[:-4].split('/')[-1] for x in file_list]))
-        ids.remove('Thumb')
-
-        images = []
-
-        for id in tqdm(ids):
-            image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
-
-            img = imread(image_path)
-            img = img / 255
-            img = img.reshape([self.heigth, self.width, 1])
-            images.append(img)
-
-        return images, ids
+        img = imread(path)
+        if self.height != 400 or self.width != 275:
+            img = imresize(img, [self.height, self.width])
+        return img / 255
 
 
     def generate_triplet_batch(self, batch_size, candidate_ids):
@@ -48,18 +38,21 @@ class BatchGenerator_Matching_Anguli:
         for _ in range(batch_size):
 
             anchor_id = np.random.choice(candidate_ids)
-            anchor_index = self.ids.index('f' + anchor_id)
-            pos_index = self.ids.index('s' + anchor_id)
+            candidate_ids.remove(anchor_id)
+            neg_id = np.random.choice(candidate_ids)
+
+            anchor = self.read_image(self.path+'Impression_1/fp_1/' + str(anchor_id) + '.jpg')
+            pos = self.read_image(self.path+'Impression_2/fp_1/' + str(anchor_id) + '.jpg')
+
             if np.random.rand() < .5:
-                anchor_index, pos_index = pos_index, anchor_index
+                anchor, pos = pos, anchor
 
-            neg_candidate_ids = ['f' + x for x in candidate_ids if x != anchor_id]+['s' + x for x in candidate_ids if x != anchor_id]
-            neg_id = np.random.choice(neg_candidate_ids)
-            neg_index = self.ids.index(neg_id)
+            if np.random.randn() < .5:
+                neg = self.read_image(self.path+'Impression_1/fp_1/' + str(neg_id) + '.jpg')
+            else:
+                neg = self.read_image(self.path + 'Impression_2/fp_1/' + str(neg_id) + '.jpg')
 
-            anchor_img, pos_img, neg_img = self.images[anchor_index], self.images[pos_index], self.images[neg_index]
-
-            triplet = np.concatenate([anchor_img, pos_img, neg_img], axis=2)
+            triplet = np.concatenate([anchor, pos, neg], axis=2)
             batch.append(triplet)
 
         return np.array(batch)
@@ -74,29 +67,27 @@ class BatchGenerator_Matching_Anguli:
 
             anchor_id = np.random.choice(candidate_ids)
 
-            anchor_index = self.ids.index('f' + anchor_id)
-            partner_index = self.ids.index('s' + anchor_id)
+            anchor = self.read_image(self.path+'Impression_1/fp_1/' + str(anchor_id) + '.jpg')
+            partner = self.read_image(self.path + 'Impression_2/fp_1/' + str(anchor_id) + '.jpg')
 
             # pos case
             if np.random.rand() < .5:
                 if np.random.rand() < .5:
-                    anchor_index, partner_index = partner_index, anchor_index
+                    anchor, partner = partner, anchor
                 label = 1
 
             # neg case
             else:
-                neg_candidate_ids = ['f' + x for x in candidate_ids if x != anchor_id] + ['s' + x for x in
-                                                                                          candidate_ids if
-                                                                                                x != anchor_id]
-                neg_id = np.random.choice(neg_candidate_ids)
-                partner_index = self.ids.index(neg_id)
+                candidate_ids.remove(anchor_id)
+                neg_id = np.random.choice(candidate_ids)
+                if np.random.rand() < .5:
+                    partner = self.read_image(self.path + 'Impression_1/fp_1/' + str(neg_id) + '.jpg')
+                else:
+                    partner = self.read_image(self.path + 'Impression_1/fp_1/' + str(neg_id) + '.jpg')
                 label = 0
 
 
-            anchor_img = self.images[anchor_index]
-            partner_img = self.images[partner_index]
-
-            duo = np.concatenate([anchor_img, partner_img, partner_img], axis=2)
+            duo = np.concatenate([anchor, partner, partner], axis=2)
 
             x_batch.append(duo)
             y_batch.append(label)
@@ -104,18 +95,18 @@ class BatchGenerator_Matching_Anguli:
         return np.array(x_batch), np.array(y_batch).reshape(batch_size, 1)
 
 
-    def generate_train_triplets(self, batch_size, augment=True):
+    def generate_train_triplets(self, batch_size):
 
-        return self.generate_triplet_batch(batch_size, self.sample_ids_train, augment)
+        return self.generate_triplet_batch(batch_size, self.sample_ids_train)
 
-    def generate_val_triplets(self, batch_size, augment=False):
+    def generate_val_triplets(self, batch_size):
 
-        return self.generate_triplet_batch(batch_size, self.sample_ids_val, augment)
+        return self.generate_triplet_batch(batch_size, self.sample_ids_val)
 
-    def generate_train_duos(self, batch_size, augment=True):
+    def generate_train_duos(self, batch_size):
 
-        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_train, augment)
+        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_train)
 
-    def generate_val_duos(self, batch_size, augment=False):
+    def generate_val_duos(self, batch_size):
 
-        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_val, augment)
+        return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_val)

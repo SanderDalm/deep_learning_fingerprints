@@ -1,22 +1,24 @@
 import numpy as np
+
 import matplotlib.pyplot as plt
 from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
 from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
 from neural_nets.neural_net_classification import NeuralNet_Classification
+import config
 
 ########################################
 # Set globals
 ########################################
 
-path = '/home/sander/data/deep_learning_fingerprints/sd04/png_txt'
+DATAPATH = config.datadir
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
 NUM_STEPS = 3001
 CATEGORIES = 5
 
-bg_anguli = BatchGenerator_Classification_Anguli(height=HEIGHT, width=WIDTH)
-bg_nist = BatchGenerator_Classification_NIST(height=HEIGHT, width=WIDTH)
+bg_anguli = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
+bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 

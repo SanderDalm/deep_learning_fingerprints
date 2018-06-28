@@ -2,15 +2,10 @@ from tqdm import tqdm
 from scipy.misc import imread, imresize
 import numpy as np
 from glob import glob
-from skimage.filters import gabor
-from skimage.morphology import skeletonize
-from skimage.util import invert
-from skimage.filters import threshold_otsu
 
 class BatchGenerator_Matching_NIST:
 
     def __init__(self, path, imsize):
-
 
         self.imsize = imsize
         self.images, self.ids = self.parse_data(path)
@@ -19,27 +14,12 @@ class BatchGenerator_Matching_NIST:
         self.sample_ids_train = self.sample_ids[:1600]
         self.sample_ids_val = self.sample_ids[1600:]
 
-    def parse_data(self, path):
+    def parse_data(self):
 
-
-        file_list = glob(path+'/*'+'/*')
-
+        file_list = glob(self.path+'/*'+'Impression_1/'+'*.jpg')
         ids = list(set([x[:-4].split('/')[-1] for x in file_list]))
-        ids.remove('Thumb')
 
-        images = []
-
-        for id in tqdm(ids):
-            image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
-
-            img = imread(image_path)
-            img = img / 255
-            if self.height != 512 or self.width != 512:
-                img = imresize(img, [self.height, self.width])
-            img = img.reshape([self.height, self.width, 1])
-            images.append(img)
-
-        return images, ids
+        return ids
 
 
     def generate_triplet_batch(self, batch_size, candidate_ids, augment):
@@ -59,17 +39,6 @@ class BatchGenerator_Matching_NIST:
             neg_index = self.ids.index(neg_id)
 
             anchor_img, pos_img, neg_img = self.images[anchor_index], self.images[pos_index], self.images[neg_index]
-
-            if augment:
-                rotation = np.random.randint(0, 4)
-                anchor_img, pos_img, neg_img = np.rot90(anchor_img, rotation), np.rot90(pos_img, rotation), np.rot90(neg_img, rotation)
-
-                if np.random.rand() > .5:
-                    anchor_img, pos_img, neg_img = np.fliplr(anchor_img), np.fliplr(pos_img), np.fliplr(neg_img)
-
-                # anchor_img += np.random.normal(0, .1, size=anchor_img.shape)
-                # pos_img += np.random.normal(0, .1, size=pos_img.shape)
-                # neg_img += np.random.normal(0, .1, size=neg_img.shape)
 
             triplet = np.concatenate([anchor_img, pos_img, neg_img], axis=2)
             batch.append(triplet)
@@ -107,16 +76,6 @@ class BatchGenerator_Matching_NIST:
 
             anchor_img = self.images[anchor_index]
             partner_img = self.images[partner_index]
-
-            if augment:
-                rotation = np.random.randint(0, 4)
-                anchor_img, partner_img = np.rot90(anchor_img, rotation), np.rot90(partner_img, rotation)
-
-                if np.random.rand() > .5:
-                    anchor_img, partner_img = np.fliplr(anchor_img), np.fliplr(partner_img)
-
-                #anchor_img += np.random.normal(0, .1, size=anchor_img.shape)
-                #partner_img += np.random.normal(0, .1, size=partner_img.shape)
 
             duo = np.concatenate([anchor_img, partner_img, partner_img], axis=2)
 

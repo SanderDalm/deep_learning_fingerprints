@@ -73,33 +73,35 @@ def augment(images):
 
 # Test augmentation
 
-# tf.enable_eager_execution()
-#
-# from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
-# from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
-# import matplotlib.pyplot as plt
-# import numpy as np
-#
-# bg = BatchGenerator_Classification_NIST()
-#
-# x, y = bg.generate_train_batch(1)
-# np.min(x)
-# np.max(x)
-#
-# x2 = augment(x)
-# np.min(x2)
-# np.max(x2)
-#
-# together = np.concatenate([x, x2], axis=1)
-# plt.imshow(together.reshape(1024, 512), cmap='gray')
-# plt.show()
-#
-#
-# x2 = tf.image.resize_images(x, [299, 299])
-#
-#
-# plt.imshow(x.reshape(512, 512), cmap='gray')
-# plt.show()
-#
-# plt.imshow(np.array(x2).reshape(299, 299), cmap='gray')
-# plt.show()
+tf.enable_eager_execution()
+
+from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
+from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
+import matplotlib.pyplot as plt
+import numpy as np
+
+import config
+
+bg = BatchGenerator_Classification_NIST(path=config.datadir)
+
+x, y = bg.generate_train_batch(1)
+np.min(x)
+np.max(x)
+
+x2 = augment(x)
+np.min(x2)
+np.max(x2)
+
+together = np.concatenate([x, x2], axis=1)
+plt.imshow(together.reshape(1024, 512), cmap='gray')
+plt.show()
+
+
+x2 = tf.image.resize_images(x, [299, 299])
+
+
+plt.imshow(x.reshape(512, 512), cmap='gray')
+plt.show()
+
+plt.imshow(np.array(x2).reshape(299, 299), cmap='gray')
+plt.show()
