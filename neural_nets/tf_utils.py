@@ -24,7 +24,6 @@ def Conv2D(x, filters, kernel_size, stride, padding='same'):
 def CNN(x, dropout_rate=None):
 
     # x = tf.image.resize_images(x, [299, 299])
-    # #x = tf.image.grayscale_to_rgb(x)
     # x = tf.concat([x, x, x], axis=3)
     # model = tf.keras.applications.inception_v3.InceptionV3(include_top=False, pooling='max', weights=None)
     # return model(x)
@@ -73,35 +72,35 @@ def augment(images):
 
 # Test augmentation
 
-tf.enable_eager_execution()
-
-from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
-from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
-import matplotlib.pyplot as plt
-import numpy as np
-
-import config
-
-bg = BatchGenerator_Classification_NIST(path=config.datadir)
-
-x, y = bg.generate_train_batch(1)
-np.min(x)
-np.max(x)
-
-x2 = augment(x)
-np.min(x2)
-np.max(x2)
-
-together = np.concatenate([x, x2], axis=1)
-plt.imshow(together.reshape(1024, 512), cmap='gray')
-plt.show()
-
-
-x2 = tf.image.resize_images(x, [299, 299])
-
-
-plt.imshow(x.reshape(512, 512), cmap='gray')
-plt.show()
-
-plt.imshow(np.array(x2).reshape(299, 299), cmap='gray')
-plt.show()
+# tf.enable_eager_execution()
+#
+# from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
+# from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
+# import matplotlib.pyplot as plt
+# import numpy as np
+#
+# import config
+#
+# bg = BatchGenerator_Classification_NIST(path=config.datadir)
+#
+# x, y = bg.generate_train_batch(1)
+# np.min(x)
+# np.max(x)
+#
+# x2 = augment(x)
+# np.min(x2)
+# np.max(x2)
+#
+# together = np.concatenate([x, x2], axis=1)
+# plt.imshow(together.reshape(1024, 512), cmap='gray')
+# plt.show()
+#
+#
+# x2 = tf.image.resize_images(x, [299, 299])
+#
+#
+# plt.imshow(x.reshape(512, 512), cmap='gray')
+# plt.show()
+#
+# plt.imshow(np.array(x2).reshape(299, 299), cmap='gray')
+# plt.show()

@@ -22,9 +22,7 @@ class BatchGenerator_Classification_NIST:
 
     def parse_data(self, path):
 
-
         file_list = glob(path + '/*' + '/*')
-        print(len(file_list))
 
         ids = list(set([x[:-4].split('/')[-1] for x in file_list]))
         ids.remove('Thumb')
