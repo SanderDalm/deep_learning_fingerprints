@@ -9,7 +9,7 @@ import config
 # Set globals
 ########################################
 
-DATAPATH = config.datadir
+DATAPATH = config.datadir+'/sd04/png_txt'
 HEIGHT = 400
 WIDTH = 275
 BATCH_SIZE = 16

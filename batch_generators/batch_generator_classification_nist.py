@@ -7,7 +7,7 @@ from glob import glob
 class BatchGenerator_Classification_NIST:
 
 
-    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/sd04/png_txt', height=512, width=512, n_train=3800):
+    def __init__(self, path=None, height=512, width=512, n_train=3800):
 
         self.height = height
         self.width = width

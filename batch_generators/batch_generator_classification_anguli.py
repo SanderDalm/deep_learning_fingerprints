@@ -9,7 +9,7 @@ from glob import glob
 class BatchGenerator_Classification_Anguli:
 
 
-    def __init__(self, path='/home/sander/data/deep_learning_fingerprints/anguli/final/', height=400, width=275, n_train=130000):
+    def __init__(self, path=None, height=400, width=275, n_train=130000):
 
         self.path = path
         self.height = height

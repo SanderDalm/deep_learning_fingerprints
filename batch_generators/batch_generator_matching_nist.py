@@ -5,7 +5,7 @@ from glob import glob
 
 class BatchGenerator_Matching_NIST:
 
-    def __init__(self, path, height=512, width=512):
+    def __init__(self, path=None, height=512, width=512):
 
         self.height, self.width, = height, width
         self.images, self.ids = self.parse_data(path)
