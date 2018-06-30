@@ -7,8 +7,9 @@ class BatchGenerator_Matching_NIST:
 
     def __init__(self, path=None, height=512, width=512):
 
+        self.path = path
         self.height, self.width, = height, width
-        self.images, self.ids = self.parse_data(path)
+        self.images, self.ids = self.parse_data()
         self.sample_ids = list(set([x[1:] for x in self.ids]))
 
         self.sample_ids_train = self.sample_ids[:1600]
@@ -47,9 +48,12 @@ class BatchGenerator_Matching_NIST:
             if np.random.rand() < .5:
                 anchor_index, pos_index = pos_index, anchor_index
 
-            candidate_ids.remove(anchor_id)
-            neg_id = np.random.choice(candidate_ids)
-            neg_index = self.ids.index(neg_id)
+            candidate_ids_neg = [x for x in candidate_ids if x != anchor_id]
+            neg_id = np.random.choice(candidate_ids_neg)
+            if np.random.rand() < .5:
+                neg_index = self.ids.index('f' + neg_id)
+            else:
+                neg_index = self.ids.index('s' + neg_id)
 
             anchor_img, pos_img, neg_img = self.images[anchor_index], self.images[pos_index], self.images[neg_index]
 
@@ -78,9 +82,12 @@ class BatchGenerator_Matching_NIST:
 
             # neg case
             else:
-                candidate_ids.remove(anchor_id)
-                neg_id = np.random.choice(candidate_ids)
-                partner_index = self.ids.index(neg_id)
+                candidate_ids_neg = [x for x in candidate_ids if x != anchor_id]
+                neg_id = np.random.choice(candidate_ids_neg)
+                if np.random.rand() < .5:
+                    partner_index = self.ids.index('f' + neg_id)
+                else:
+                    partner_index = self.ids.index('s' + neg_id)
                 label = 0
 
             anchor_img = self.images[anchor_index]

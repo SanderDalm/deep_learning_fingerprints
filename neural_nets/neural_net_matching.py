@@ -16,7 +16,7 @@ class NeuralNet_Matching:
         self.session = tf.Session()  # config=tf.ConfigProto(log_device_placement=True)
 
         # Feed placeholders
-        self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.height, self.width, 1], name='input')
+        self.x = tf.placeholder(dtype=tf.float32, shape=[None, self.height, self.width, 3], name='input')
         self.dropout_rate = tf.placeholder(tf.float32)
         self.augment = tf.placeholder(tf.float32)
         self.lr = tf.placeholder(tf.float32)
@@ -99,7 +99,7 @@ class NeuralNet_Matching:
             loss_, _ = self.session.run([self.loss, self.train_step], feed_dict=feed_dict)
             lr *= decay
 
-            if step % 1000 == 0:
+            if step % 100 == 0:
                 if self.network_type == 'triplets':
                     x_batch = batchgen.generate_val_triplets(batch_size)
                     feed_dict = {
@@ -124,7 +124,7 @@ class NeuralNet_Matching:
                 print('lr: {}'.format(lr))
                 print('')
 
-            if (step + 1) % 1000 == 0 or step == num_steps - 1:
+            if (step + 1) % 100 == 0 or step == num_steps - 1:
                 self.saver.save(self.session, checkpoint + str(step) + '.ckpt')
                 print('Saved to {}'.format(checkpoint + str(step) + '.ckpt'))
 

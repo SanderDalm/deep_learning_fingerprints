@@ -3,49 +3,35 @@ import matplotlib.pyplot as plt
 
 from neural_nets.neural_net_matching import NeuralNet_Matching
 from batch_generators.batch_generator_matching_nist import BatchGenerator_Matching_NIST
+from batch_generators.batch_generator_matching_anguli import BatchGenerator_Matching_Anguli
 import config
 
 ########################################
 # Set globals
 ########################################
 
-DATAPATH = config.datadir+'/sd04/png_txt'
 HEIGHT = 400
 WIDTH = 275
-BATCH_SIZE = 16
-NUM_STEPS = 2001
+BATCH_SIZE = 32
+NUM_STEPS = 1001
 
 
 ########################################
 # Train model
 ########################################
 
-bg = BatchGenerator_Matching_NIST(path=DATAPATh, height=HEIGHT, width=WIDTH)
-
-# Check batch gen output
-for i in range(5):
-    x, y = bg.generate_train_duos(1, True)
-    index = 0
-    y[index]
-    plt.imshow(np.concatenate([x[index, :, :, 0], x[index, :, :, 1]], axis=0), cmap='gray')
-    if y == 1:
-        plt.savefig('same_source_{}.png'.format(i))
-    else:
-        plt.savefig('different_source_{}.png'.format(i))
-    plt.clf()
-    #plt.show()
-    #print(y[0])
-
+bg_anguli = BatchGenerator_Matching_Anguli(path=config.datadir+'/anguli/final/', height=HEIGHT, width=WIDTH)
+bg_nist = BatchGenerator_Matching_NIST(path=config.datadir+'/sd04/png_txt/', height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Matching(height=HEIGHT, width=WIDTH, network_type='duos')
 
 # Record: conv/conv/dropout/pool architectuur, .5 dropout, augment false, lr.0001, decay 1, 900 stappen, 93% acc, 'models/neural_net899.ckpt'
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
-                          batchgen=bg,
+                          batchgen=bg_anguli,
                           batch_size=BATCH_SIZE,
                           dropout_rate=0.5,
-                          augment=False,
+                          augment=0,
                           lr=.0001,
                           decay=1)
 
@@ -64,7 +50,7 @@ distances_same = []
 distances_diff = []
 
 for _ in range(15):
-    batch = bg.generate_val_triplets(32)
+    batch = bg_anguli.generate_val_triplets(32)
 
     for triplet in batch:
 
@@ -116,27 +102,42 @@ for index, value in enumerate(hist_pos):
 # Determine acc for duo network
 ########################################
 
-samples = 0
-correct = 0
+def get_acc(bg, train_val):
 
-pos_preds = []
-neg_preds = []
+    samples = 0
+    correct = 0
 
-for i in range(15):
-    x, y = bg.generate_val_duos(32)
-    for img, label in zip(x, y):
-        samples += 1
-        pred, _ = nn.predict(img[:, :, 0].reshape(HEIGHT, WIDTH, 1), img[:, :, 1].reshape(HEIGHT, WIDTH, 1))
+    pos_preds = []
+    neg_preds = []
 
-        if np.round(pred, 0) == label:
-            correct += 1
+    for i in range(15):
+        if train_val == 'train':
+            x, y = bg.generate_train_duos(32)
+        if train_val == 'val':
+            x, y = bg.generate_val_duos(32)
+        for img, label in zip(x, y):
+            samples += 1
+            pred, _ = nn.predict(img[:, :, 0].reshape(HEIGHT, WIDTH, 1), img[:, :, 1].reshape(HEIGHT, WIDTH, 1))
 
-        if label == 0:
-            neg_preds.append(pred)
-        if label == 1:
-            pos_preds.append(pred)
-print(correct/samples)
+            if np.round(pred, 0) == label:
+                correct += 1
 
-plt.hist(pos_preds, color='g', alpha=.4)
-plt.hist(neg_preds, color='r', alpha=.4)
-plt.show()
+            if label == 0:
+                neg_preds.append(pred)
+            if label == 1:
+                pos_preds.append(pred)
+
+    print('{} acc: {}'.format(train_val, correct / samples))
+    plt.hist(pos_preds, color='g', alpha=.4)
+    plt.hist(neg_preds, color='r', alpha=.4)
+    plt.show()
+    plt.clf()
+
+
+print('NIST')
+get_acc(bg_nist, 'train')
+get_acc(bg_nist, 'val')
+print('')
+print('Anguli')
+get_acc(bg_anguli, 'train')
+get_acc(bg_anguli, 'val')
