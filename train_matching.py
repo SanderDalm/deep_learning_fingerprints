@@ -13,7 +13,7 @@ import config
 HEIGHT = 400
 WIDTH = 275
 BATCH_SIZE = 32
-NUM_STEPS = 1001
+NUM_STEPS = 3001
 
 
 ########################################
@@ -31,7 +31,7 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           batchgen=bg_anguli,
                           batch_size=BATCH_SIZE,
                           dropout_rate=0.5,
-                          augment=0,
+                          augment=1,
                           lr=.0001,
                           decay=1)
 
