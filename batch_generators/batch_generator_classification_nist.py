@@ -79,17 +79,3 @@ class BatchGenerator_Classification_NIST:
     def generate_val_batch(self, batch_size):
 
         return self.generate_batch(batch_size, self.images_val, self.labels_val)
-
-# bg = BatchGenerator_Classification_NIST(height=400, width=275)
-#
-# import matplotlib.pyplot as plt
-# x, y = bg.generate_val_batch(32)
-# plt.imshow(x[0].reshape(400, 275), cmap='gray')
-# plt.show()
-
-
-
-# bg.label_dict
-#
-# for i in range(5):
-#     print(np.mean(bg.labels[:, i]))

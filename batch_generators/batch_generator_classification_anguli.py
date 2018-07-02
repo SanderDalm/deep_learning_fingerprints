@@ -95,36 +95,3 @@ class BatchGenerator_Classification_Anguli:
     def generate_val_batch(self, batch_size):
 
         return self.generate_batch(batch_size, self.image_ids_val, self.labels_val)
-
-
-
-# bg = BatchGenerator_Classification_Anguli()
-#
-# len(bg.image_ids_train)
-# len(bg.labels_train)
-# len(bg.image_ids_val)
-# len(bg.labels_val)
-
-
-# bg.label_dict
-#
-# for i in range(5):
-#     print(np.mean(bg.labels[:, i]))
-#
-#
-# import matplotlib.pyplot as plt
-#x, y = bg.generate_val_batch(32)
-
-
-# index = 20
-# plt.imshow(x[index].reshape(400, 275), cmap='gray')
-# plt.show()
-# print(y[index])
-#
-# for index, label in enumerate(y):
-#     print(index, label)
-
-
-# a = np.array([1,2,3,4])
-# indices = a != 3
-# a[indices]

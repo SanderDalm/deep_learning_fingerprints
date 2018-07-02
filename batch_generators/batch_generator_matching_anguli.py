@@ -110,31 +110,3 @@ class BatchGenerator_Matching_Anguli:
     def generate_val_duos(self, batch_size):
 
         return self.generate_duo_batch_with_labels(batch_size, self.ids_val)
-
-
-#bg = BatchGenerator_Matching_Anguli(path='/home/sander/data/deep_learning_fingerprints/anguli/final/')
-#
-# len(bg.ids)
-# len(bg.ids_train)
-# len(bg.ids_val)
-#
-# x, y = bg.generate_val_duos(32)
-#
-# import matplotlib.pyplot as plt
-# plt.imshow(np.concatenate([x[0, :, :, 0].reshape(400,275), x[0, :, :, 1].reshape(400,275)], axis=0), cmap='gray')
-# plt.show()
-# y[0]
-#
-#
-#
-# batch = bg.generate_val_triplets(32)
-#
-# import matplotlib.pyplot as plt
-# batch.shape
-#
-# anchor=batch[0, :, :, 0].reshape(400, 275)
-# pos=batch[0, :, :, 1].reshape(400, 275)
-# neg=batch[0, :, :, 2].reshape(400, 275)
-# show = np.concatenate([anchor, pos, neg], axis=0)
-# plt.imshow(show, cmap='gray')
-# plt.show()
