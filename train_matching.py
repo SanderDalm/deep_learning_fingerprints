@@ -20,7 +20,7 @@ NUM_STEPS = 3001
 # Train model
 ########################################
 
-bg_anguli = BatchGenerator_Matching_Anguli(path=config.datadir+'/anguli/final/', height=HEIGHT, width=WIDTH)
+#bg_anguli = BatchGenerator_Matching_Anguli(path=config.datadir+'/anguli/final/', height=HEIGHT, width=WIDTH)
 bg_nist = BatchGenerator_Matching_NIST(path=config.datadir+'/sd04/png_txt/', height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Matching(height=HEIGHT, width=WIDTH, network_type='duos')
@@ -28,7 +28,7 @@ nn = NeuralNet_Matching(height=HEIGHT, width=WIDTH, network_type='duos')
 # Record: conv/conv/dropout/pool architectuur, .5 dropout, augment false, lr.0001, decay 1, 900 stappen, 93% acc, 'models/neural_net899.ckpt'
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
-                          batchgen=bg_anguli,
+                          batchgen=bg_nist,
                           batch_size=BATCH_SIZE,
                           dropout_rate=0.5,
                           augment=1,
@@ -50,7 +50,7 @@ distances_same = []
 distances_diff = []
 
 for _ in range(15):
-    batch = bg_anguli.generate_val_triplets(32)
+    batch = bg_nist.generate_val_triplets(32)
 
     for triplet in batch:
 
@@ -137,7 +137,7 @@ def get_acc(bg, train_val):
 print('NIST')
 get_acc(bg_nist, 'train')
 get_acc(bg_nist, 'val')
-print('')
-print('Anguli')
-get_acc(bg_anguli, 'train')
-get_acc(bg_anguli, 'val')
+#print('')
+#print('Anguli')
+#et_acc(bg_anguli, 'train')
+#et_acc(bg_anguli, 'val')
