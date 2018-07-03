@@ -100,7 +100,6 @@ class BatchGenerator_Matching_NIST:
 
         return np.array(x_batch), np.array(y_batch).reshape(batch_size, 1)
 
-
     def generate_train_triplets(self, batch_size):
 
         return self.generate_triplet_batch(batch_size, self.sample_ids_train)

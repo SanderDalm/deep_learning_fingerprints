@@ -1,1 +1,1 @@
-datadir = '/home/sander/data/deep_learning_fingerprints'
+datadir = '/mnt/ssd/data/deep_learning_fingerprints/'

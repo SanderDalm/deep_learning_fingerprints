@@ -37,7 +37,7 @@ class NeuralNet_Classification:
         self.loss = tf.losses.softmax_cross_entropy(logits=self.logits, onehot_labels=self.label)
 
 
-        self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.lr)#  tf.train.AdamOptimizer()
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         self.train_step = self.optimizer.minimize(self.loss)
 
         self.init_op = tf.global_variables_initializer()
