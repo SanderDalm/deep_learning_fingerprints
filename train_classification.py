@@ -50,7 +50,7 @@ def get_acc(bg, train_val):
 
     samples = 0
     correct = 0
-    for i in range(10):
+    for i in range(100):
         if train_val == 'train':
             x, y = bg.generate_train_batch(32)
         if train_val == 'val':
@@ -63,7 +63,7 @@ def get_acc(bg, train_val):
 
     print('{} acc: {}'.format(train_val, correct/samples))
 
-print('NIST')
+print('NFI')
 get_acc(bg_NFI, 'train')
 get_acc(bg_NFI, 'val')
 #print('')
