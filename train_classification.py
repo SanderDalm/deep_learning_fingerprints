@@ -1,8 +1,11 @@
-import numpy as np
+from os.path import join
 
+import numpy as np
 import matplotlib.pyplot as plt
+
 from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
 from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
+from batch_generators.batch_generator_classification_NFI import BatchGenerator_Classification_NFI
 from neural_nets.neural_net_classification import NeuralNet_Classification
 import config
 
@@ -10,20 +13,22 @@ import config
 # Set globals
 ########################################
 
-DATAPATH = config.datadir+'/sd04/png_txt'
+DATAPATH = join(config.datadir, 'NFI')
+META_FILE = 'GeneralPatterns.txt'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
 NUM_STEPS = 2001
-CATEGORIES = 5
+CATEGORIES = 7
 
 #bg_anguli = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
-bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
+#bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
+bg_NFI = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, 'GeneralPatterns.txt'), height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
-                          batchgen=bg_nist,
+                          batchgen=bg_NFI,
                           batch_size=BATCH_SIZE,
                           dropout_rate=0.5,
                           augment=1,
@@ -59,8 +64,8 @@ def get_acc(bg, train_val):
     print('{} acc: {}'.format(train_val, correct/samples))
 
 print('NIST')
-get_acc(bg_nist, 'train')
-get_acc(bg_nist, 'val')
+get_acc(bg_NFI, 'train')
+get_acc(bg_NFI, 'val')
 #print('')
 #print('Anguli')
 #get_acc(bg_anguli, 'train')
