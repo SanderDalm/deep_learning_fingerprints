@@ -52,7 +52,7 @@ class BatchGenerator_Classification_NFI:
         return np.array(filenames), labels_one_hot
 
 
-    def generate_batch(self, batch_size, filenames):
+    def generate_batch(self, batch_size, filenames, include_aug):
 
         x_batch = []
         y_batch = []
@@ -61,18 +61,18 @@ class BatchGenerator_Classification_NFI:
 
             filename = np.random.choice(filenames)
 
-            if self.include_aug: # kies 1 vd augmentatie mappen
+            if include_aug: # Include augmented samples
                 randint = np.random.choice([1, 2, 3, 4])
             if randint == 4: # Read original file
                 image = imread(self.path+'/BMP/'+filename)
                 image = rgb2gray(image)
             else: # Read augmented file
-                image = np.load(self.path+'/Aug{}/'.format(randint)+filename.strip('.npy'))
+                image = np.load(self.path+'/Aug{}/'.format(randint)+filename)
+                filename = filename.strip('.npy') # strip .npy for label lookup later
 
             if self.height != 512 or self.width != 512:
                 image = imresize(image, [self.height, self.width])
 
-            #image = image / 255
             x_batch.append(image)
             y_batch.append(self.label_dict_one_hot[filename])
 
@@ -81,9 +81,9 @@ class BatchGenerator_Classification_NFI:
 
     def generate_train_batch(self, batch_size):
 
-        return self.generate_batch(batch_size, self.filenames_train)
+        return self.generate_batch(batch_size, self.filenames_train, self.include_aug)
 
 
     def generate_val_batch(self, batch_size):
 
-        return self.generate_batch(batch_size, self.filenames_val)
+        return self.generate_batch(batch_size, self.filenames_val, False)
