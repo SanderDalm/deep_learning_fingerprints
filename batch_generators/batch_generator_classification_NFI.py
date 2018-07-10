@@ -10,10 +10,11 @@ from collections import defaultdict
 
 class BatchGenerator_Classification_NFI:
 
-    def __init__(self, path=None, meta_file=None, height=512, width=512, n_train=20000):
+    def __init__(self, path=None, meta_file=None, include_aug=False, height=512, width=512, n_train=20000):
 
         self.path = path
         self.meta_file = meta_file
+        self.include_aug = include_aug
         self.height = height
         self.width = width
 
@@ -59,8 +60,14 @@ class BatchGenerator_Classification_NFI:
         for _ in range(batch_size):
 
             filename = np.random.choice(filenames)
-            image = imread(self.path+'/BMP/'+filename)
-            image = rgb2gray(image)
+
+            if self.include_aug: # kies 1 vd augmentatie mappen
+                randint = np.random.choice([1, 2, 3, 4])
+            if randint == 4: # Read original file
+                image = imread(self.path+'/BMP/'+filename)
+                image = rgb2gray(image)
+            else: # Read augmented file
+                image = np.load(self.path+'/Aug{}/'.format(randint)+filename.strip('.npy'))
 
             if self.height != 512 or self.width != 512:
                 image = imresize(image, [self.height, self.width])

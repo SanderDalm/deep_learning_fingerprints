@@ -11,19 +11,19 @@ import config
 
 ########################################
 # Set globals
-########################################
+########################################0
 
 DATAPATH = join(config.datadir, 'NFI')
-META_FILE = 'GeneralPatterns.txt'
+META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
-BATCH_SIZE = 32
-NUM_STEPS = 2001
+BATCH_SIZE = 128
+NUM_STEPS = 4001
 CATEGORIES = 7
 
 #bg_anguli = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
 #bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
-bg_NFI = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, 'GeneralPatterns.txt'), height=HEIGHT, width=WIDTH)
+bg_NFI = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 
@@ -35,12 +35,11 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           lr=.0001,
                           decay=1)
 
-#nn.load_weights('models/neural_net899.ckpt')
+nn.load_weights('models/neural_net2199.ckpt')
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)
 plt.show()
-
 
 ########################################
 # Determine acc
@@ -55,11 +54,14 @@ def get_acc(bg, train_val):
             x, y = bg.generate_train_batch(32)
         if train_val == 'val':
             x, y = bg.generate_val_batch(32)
+
         for img, label in zip(x, y):
             samples += 1
             pred = nn.predict(img)
             if np.argmax(pred) == np.argmax(label):
                 correct += 1
+
+
 
     print('{} acc: {}'.format(train_val, correct/samples))
 
