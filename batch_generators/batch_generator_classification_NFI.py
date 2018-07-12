@@ -62,13 +62,13 @@ class BatchGenerator_Classification_NFI:
             filename = np.random.choice(filenames)
 
             if include_aug: # Include augmented samples
-                randint = np.random.choice([1, 2, 3, 4])
-            if randint == 4: # Read original file
+                randint = np.random.choice([1, 2, 3])
+                image = np.load(self.path + '/Aug{}/'.format(randint) + filename + '.npy')
+                filename = filename.replace('.npy', '')  # strip .npy for label lookup later
+            else: # Read original files only
                 image = imread(self.path+'/BMP/'+filename)
                 image = rgb2gray(image)
-            else: # Read augmented file
-                image = np.load(self.path+'/Aug{}/'.format(randint)+filename)
-                filename = filename.strip('.npy') # strip .npy for label lookup later
+
 
             if self.height != 512 or self.width != 512:
                 image = imresize(image, [self.height, self.width])

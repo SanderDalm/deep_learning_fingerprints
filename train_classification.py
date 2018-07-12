@@ -18,12 +18,12 @@ META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 128
-NUM_STEPS = 4001
+NUM_STEPS = 6001
 CATEGORIES = 7
 
 #bg_anguli = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
 #bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
-bg_NFI = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), height=HEIGHT, width=WIDTH)
+bg_NFI = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 
@@ -35,7 +35,7 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           lr=.0001,
                           decay=1)
 
-nn.load_weights('models/neural_net2199.ckpt')
+#nn.load_weights('models/neural_net2199.ckpt')
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)
