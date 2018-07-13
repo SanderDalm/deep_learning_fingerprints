@@ -110,7 +110,7 @@ class NeuralNet_Classification:
             self.dropout_rate: 0,
             self.augment: 0
         }
-        embedding = self.session.run([self.cnn_output], feed_dict=feed_dict)
+        embedding = self.session.run([self.fc2], feed_dict=feed_dict)
 
         return embedding[0][0]
 

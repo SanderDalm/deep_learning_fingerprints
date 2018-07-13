@@ -88,8 +88,9 @@ def get_embeddings(bg):
 
     embeddings = []
     labels = []
-    for i in range(100):
-        x, y = bg.generate_train_batch(32)
+
+    for i in range(120):
+        x, y = bg.generate_val_batch(32)
 
         for img, label in zip(x, y):
             embedding = nn.get_embedding(img)
@@ -100,10 +101,13 @@ def get_embeddings(bg):
 
 embeddings, labels = get_embeddings(bg)
 
-
 from sklearn.manifold import TSNE
-tsne = TSNE()
+from sklearn.decomposition import PCA
+tsne = TSNE(perplexity=20)#PCA(n_components=2)
 embeddings_tsne = tsne.fit_transform(embeddings)
 
-plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=labels, alpha=.4)
-plt.show()
+color_dict = {0: 'b', 1: 'g', 2: 'r', 3: 'c', 4: 'm', 5: 'y', 6: 'k'}
+bg.label_dict
+colors = [color_dict[x] for x in labels]
+
+plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=colors)
