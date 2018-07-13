@@ -14,13 +14,18 @@ DATAPATH = path.join(config.datadir, 'NFI')
 
 images = glob(DATAPATH+'*/BMP/*')
 
-for filename in tqdm(images):
+perlin_noise = generate_perlin_noise((512, 512))
 
-    img = rgb2gray(imread(filename))
+for aug_number in [1, 2, 3, 4, 5, 6, 7]:
 
-    for aug_number in [1, 2, 3, 4]:
+    for filename in tqdm(images):
 
+        img = rgb2gray(imread(filename))
+
+        if np.random.normal() < .1:
+            perlin_noise = generate_perlin_noise((512, 512))
         aug = augment_fingerprint(img)
+        aug = np.minimum(perlin_noise, aug)
 
         if not path.exists(DATAPATH + '/Aug{}'.format(aug_number)):
             os.makedirs(DATAPATH + '/Aug{}'.format(aug_number))

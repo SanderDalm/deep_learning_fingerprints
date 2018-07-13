@@ -73,8 +73,7 @@ def generate_perlin_noise(shape, perlin_scale=10.0, perlin_octaves=6, perlin_per
     return pattern
 
 def augment_fingerprint(fingerprint):
-    perlin_noise = generate_perlin_noise((512, 512))
     fingerprint_aug = elastic_transform(fingerprint, fingerprint.shape[1] * 3, fingerprint.shape[1] * 0.1, fingerprint.shape[1] * 0.1)
-    return np.minimum(perlin_noise, fingerprint_aug)
+    return fingerprint_aug
 
 
