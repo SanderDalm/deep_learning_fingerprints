@@ -103,6 +103,18 @@ class NeuralNet_Classification:
         return pred[0][0]
 
 
+    def get_embedding(self, image):
+
+        feed_dict = {
+            self.x: image.reshape(1, self.height, self.width, 1),
+            self.dropout_rate: 0,
+            self.augment: 0
+        }
+        embedding = self.session.run([self.cnn_output], feed_dict=feed_dict)
+
+        return embedding[0][0]
+
+
     def load_weights(self, path):
         self.saver.restore(self.session, path)
         print('Weights loaded.')

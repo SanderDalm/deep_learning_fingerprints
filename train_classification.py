@@ -14,7 +14,7 @@ import config
 ########################################0
 
 DATAPATH = join(config.datadir, 'NFI')
-META_FILE = 'CLASSIFICATION-extended pattern set.pet'#'GeneralPatterns.txt'
+META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
@@ -25,7 +25,7 @@ DECAY = .9997
 
 #bg_anguli = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
 #bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
-bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=True)
+bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=False)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, len(bg.label_dict))
 
@@ -37,7 +37,7 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           lr=.0001,
                           decay=DECAY)
 
-#nn.load_weights('models/neural_net7899.ckpt')
+nn.load_weights('models/neural_net8000.ckpt')
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)
@@ -76,3 +76,34 @@ get_acc(bg, 'val')
 #print('Anguli')
 #get_acc(bg_anguli, 'train')
 #get_acc(bg_anguli, 'val')
+
+
+
+
+########################################
+# Plot embeddings with t-sne.
+########################################
+
+def get_embeddings(bg):
+
+    embeddings = []
+    labels = []
+    for i in range(100):
+        x, y = bg.generate_train_batch(32)
+
+        for img, label in zip(x, y):
+            embedding = nn.get_embedding(img)
+            embeddings.append(embedding)
+            labels.append(np.argmax(label))
+
+    return np.array(embeddings), np.array(labels)
+
+embeddings, labels = get_embeddings(bg)
+
+
+from sklearn.manifold import TSNE
+tsne = TSNE()
+embeddings_tsne = tsne.fit_transform(embeddings)
+
+plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=labels, alpha=.4)
+plt.show()
