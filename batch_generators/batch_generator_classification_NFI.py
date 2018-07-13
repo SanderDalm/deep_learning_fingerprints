@@ -10,13 +10,24 @@ from collections import defaultdict
 
 class BatchGenerator_Classification_NFI:
 
-    def __init__(self, path=None, meta_file=None, include_aug=False, height=512, width=512, n_train=20000):
+    def __init__(self, path=None, meta_file=None, include_aug=False, height=512, width=512, n_train=20000, detect_special_patterns=False):
 
         self.path = path
         self.meta_file = meta_file
         self.include_aug = include_aug
         self.height = height
         self.width = width
+        self.detect_special_patterns = detect_special_patterns
+        if self.detect_special_patterns:
+            self.custom_labels = [
+                                  'LEFT_COMPOSITE_WHORL',
+                                  'LEFT_PLAIN_LOOP',
+                                  'PLAIN_ARCH',
+                                  'PLAIN_WHORL',
+                                  'RIGHT_COMPOSITE_WHORL',
+                                  'RIGHT_PLAIN_LOOP',
+                                  'SPECIAL'
+                                  ]
 
         self.filenames, self.label_dict_one_hot = self.parse_data()
         shuffled_indices = list(range(len(self.filenames)))
@@ -38,13 +49,20 @@ class BatchGenerator_Classification_NFI:
             for line in doc.readlines():
                 filename = line.split(' ')[0]
                 label = line.split(' ')[1]
+                if self.detect_special_patterns:
+                    if label not in self.custom_labels:
+                        label = 'SPECIAL'
+                    else:
+                        label = 'NOT SPECIAL'
                 labels[filename] = label
                 all_labels.append(label)
+
 
             # Tokenize labels
             tokens = list(range(len(set(all_labels))))
             n_values = np.max(tokens) + 1
             label_types = sorted(list(set(all_labels)))
+
             self.label_dict = {key: value for key, value in zip(label_types, tokens)}
             label_dict_one_hot = {label: np.eye(n_values)[token] for label, token in self.label_dict.items()}
             labels_one_hot = {filename: label_dict_one_hot[label] for filename, label in labels.items()}

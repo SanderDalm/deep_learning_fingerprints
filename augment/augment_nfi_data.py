@@ -22,7 +22,7 @@ for aug_number in [1, 2, 3, 4, 5, 6, 7]:
 
         img = rgb2gray(imread(filename))
 
-        if np.random.normal() < .1:
+        if np.random.normal() < .05:
             perlin_noise = generate_perlin_noise((512, 512))
         aug = augment_fingerprint(img)
         aug = np.minimum(perlin_noise, aug)
@@ -39,10 +39,6 @@ for aug_number in [1, 2, 3, 4, 5, 6, 7]:
 #
 # aug = augment_fingerprint(orig)
 # plt.imshow(aug, cmap='gray')
-#
-# perlin = generate_perlin_noise((512, 512))
-# plt.imshow(perlin, cmap='gray')
-#
 #
 # aug1 = np.load(filename.replace('BMP', 'Aug1')+'.npy')
 # aug2 = np.load(filename.replace('BMP', 'Aug2')+'.npy')

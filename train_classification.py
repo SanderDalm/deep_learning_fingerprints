@@ -14,24 +14,23 @@ import config
 ########################################0
 
 DATAPATH = join(config.datadir, 'NFI')
-META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
+META_FILE = 'CLASSIFICATION-extended pattern set.pet'#'GeneralPatterns.txt'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
 NUM_STEPS = 8001
-CATEGORIES = 7
 DROPOUT = .5
 AUGMENT = 1
 DECAY = .9997
 
 #bg_anguli = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
 #bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
-bg_NFI = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH)
+bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=True)
 
-nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
+nn = NeuralNet_Classification(HEIGHT, WIDTH, len(bg.label_dict))
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
-                          batchgen=bg_NFI,
+                          batchgen=bg,
                           batch_size=BATCH_SIZE,
                           dropout_rate=DROPOUT,
                           augment=AUGMENT,
@@ -71,8 +70,8 @@ def get_acc(bg, train_val):
     print('{} acc: {}'.format(train_val, correct/samples))
 
 print('NFI')
-get_acc(bg_NFI, 'train')
-get_acc(bg_NFI, 'val')
+get_acc(bg, 'train')
+get_acc(bg, 'val')
 #print('')
 #print('Anguli')
 #get_acc(bg_anguli, 'train')
