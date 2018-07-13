@@ -64,8 +64,8 @@ def augment(images):
                              dtype=tf.float32)
     images = tf.add(images, noise)
 
-    images = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=1.), images)
-    images = tf.map_fn(lambda img: tf.image.random_contrast(img, lower=0, upper=1), images)
+    images = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=.8), images)
+    images = tf.map_fn(lambda img: tf.image.random_contrast(img, lower=0.2, upper=.8), images)
 
     return images
 

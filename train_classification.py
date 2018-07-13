@@ -17,9 +17,12 @@ DATAPATH = join(config.datadir, 'NFI')
 META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
-BATCH_SIZE = 128
-NUM_STEPS = 6001
+BATCH_SIZE = 32
+NUM_STEPS = 8001
 CATEGORIES = 7
+DROPOUT = .5
+AUGMENT = 1
+DECAY = .9997
 
 #bg_anguli = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
 #bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
@@ -30,16 +33,20 @@ nn = NeuralNet_Classification(HEIGHT, WIDTH, CATEGORIES)
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           batchgen=bg_NFI,
                           batch_size=BATCH_SIZE,
-                          dropout_rate=0.5,
-                          augment=1,
+                          dropout_rate=DROPOUT,
+                          augment=AUGMENT,
                           lr=.0001,
-                          decay=1)
+                          decay=DECAY)
 
-#nn.load_weights('models/neural_net2199.ckpt')
+#nn.load_weights('models/neural_net7899.ckpt')
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)
 plt.show()
+
+#plt.plot([np.mean(loss[index:index+30]) for index, value in enumerate(loss)], color='b', alpha=.7)
+#plt.plot([np.mean(val_loss[index:index+30]) for index, value in enumerate(val_loss)], color='g', alpha=.7)
+#plt.show()
 
 ########################################
 # Determine acc
@@ -60,8 +67,6 @@ def get_acc(bg, train_val):
             pred = nn.predict(img)
             if np.argmax(pred) == np.argmax(label):
                 correct += 1
-
-
 
     print('{} acc: {}'.format(train_val, correct/samples))
 

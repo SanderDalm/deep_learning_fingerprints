@@ -84,7 +84,7 @@ class NeuralNet_Classification:
                 print('lr: {}'.format(lr))
                 print('')
 
-            if (step + 1) % 100 == 0 or step == num_steps - 1:
+            if step % 100 == 0 or step == num_steps - 1:
                 self.saver.save(self.session, checkpoint + str(step) + '.ckpt')
                 print('Saved to {}'.format(checkpoint + str(step) + '.ckpt'))
 

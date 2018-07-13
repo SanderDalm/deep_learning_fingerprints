@@ -31,7 +31,7 @@ def elastic_transform(image, alpha, sigma, alpha_affine, random_state=None):
                        center_square - square_size])
     pts2 = pts1 + random_state.uniform(-alpha_affine, alpha_affine, size=pts1.shape).astype(np.float32)
     M = cv2.getAffineTransform(pts1, pts2)
-    image = cv2.warpAffine(image, M, shape_size[::-1], borderMode=cv2.BORDER_REFLECT_101)
+    image = cv2.warpAffine(image, M, shape_size[::-1], borderMode=cv2.BORDER_REFLECT, borderValue=1.0)
 
     dx = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma) * alpha
     dy = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma) * alpha
@@ -43,17 +43,20 @@ def elastic_transform(image, alpha, sigma, alpha_affine, random_state=None):
 
 
 def generate_perlin_noise(shape, perlin_scale=10.0, perlin_octaves=6, perlin_persistence=0.5, perlin_lacunarity=2.0):
-    pattern = np.random.normal(0, .1, shape)
+    pattern = np.zeros(shape)
+    z = np.random.randint(0, 65353)
     for i in range(shape[0]):
         for j in range(shape[1]):
-            pattern[i][j] = noise.pnoise2(i / perlin_scale,
+            pattern[i][j] = noise.pnoise3(i / perlin_scale,
                                           j / perlin_scale,
+                                          z,
                                           octaves=perlin_octaves,
                                           persistence=perlin_persistence,
                                           lacunarity=perlin_lacunarity,
                                           repeatx=1024,
                                           repeaty=1024,
                                           base=0)
+
     # apply a threshold on snortjes
     snotjes_threshold = 0.2
     pattern[pattern < snotjes_threshold] = snotjes_threshold
@@ -70,8 +73,8 @@ def generate_perlin_noise(shape, perlin_scale=10.0, perlin_octaves=6, perlin_per
     return pattern
 
 def augment_fingerprint(fingerprint):
-    #perlin_noise = generate_perlin_noise((512, 512))
+    perlin_noise = generate_perlin_noise((512, 512))
     fingerprint_aug = elastic_transform(fingerprint, fingerprint.shape[1] * 3, fingerprint.shape[1] * 0.1, fingerprint.shape[1] * 0.1)
-    return fingerprint_aug#np.minimum(perlin_noise, fingerprint_aug)
+    return np.minimum(perlin_noise, fingerprint_aug)
 
 

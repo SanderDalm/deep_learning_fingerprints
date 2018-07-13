@@ -8,7 +8,7 @@ from skimage.color import rgb2gray
 from tqdm import tqdm
 
 import config
-from augment.augment_fingerprint import augment_fingerprint
+from augment.augment_fingerprint import augment_fingerprint, generate_perlin_noise
 
 DATAPATH = path.join(config.datadir, 'NFI')
 
@@ -29,6 +29,16 @@ for filename in tqdm(images):
 # import matplotlib.pyplot as plt
 # filename = images[0]
 # orig = rgb2gray(imread(filename))
+# plt.imshow(orig, cmap='gray')
+#
+#
+# aug = augment_fingerprint(orig)
+# plt.imshow(aug, cmap='gray')
+#
+# perlin = generate_perlin_noise((512, 512))
+# plt.imshow(perlin, cmap='gray')
+#
+#
 # aug1 = np.load(filename.replace('BMP', 'Aug1')+'.npy')
 # aug2 = np.load(filename.replace('BMP', 'Aug2')+'.npy')
 # aug3 = np.load(filename.replace('BMP', 'Aug3')+'.npy')
