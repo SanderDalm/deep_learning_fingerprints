@@ -115,15 +115,28 @@ plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=colors)
 ########################################
 
 layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
-len(layers)
-layer = layers[9].name
 
-target = nn.session.graph.get_tensor_by_name(layer + ':0')
+for layer in layers[0:1]:
+    layername = layer.name
+    print(layername)
+    target = nn.session.graph.get_tensor_by_name(layername + ':0')
 
-img_noise = np.random.uniform(size=(1, 512, 512, 1))
+    num_channels = target.shape.as_list()[3]
 
-img = nn.visualize_layer(input=img_noise,
-                   op=target[:, :, :, 8],
-                   n_iter=20,
-                   stepsize=1)
-plt.imshow(img, cmap='gray')
+    num_rows = int(np.sqrt(num_channels))
+    num_cols = num_rows
+
+    fig, axs = plt.subplots(num_rows, num_cols, facecolor='w', edgecolor='k')
+    fig.subplots_adjust(hspace=.001, wspace=.001)
+    axs = axs.ravel()
+
+    for channel in range(num_channels):
+        print(channel)
+        img_noise = np.random.uniform(size=(1, 512, 512, 1))
+        img = nn.visualize_layer(input=img_noise,
+                           op=target[:, :, :, channel],
+                           n_iter=20,
+                           stepsize=1)
+
+        axs[channel].imshow(img, cmap='gray')
+        axs[channel].set_title(layername + ':' + str(channel))
