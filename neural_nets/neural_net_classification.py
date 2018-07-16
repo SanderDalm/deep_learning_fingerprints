@@ -120,26 +120,18 @@ class NeuralNet_Classification:
         print('Weights loaded.')
 
 
-    def visualize_layer(self, layer, channel):
-
-        import numpy as np
-        import matplotlib.pyplot as plt
+    def visualize_layer(self, op, input, n_iter, stepsize):
 
         # start with a gray image with a little noise
-        img_noise = np.random.uniform(size=(1, 512, 512, 1))
-
-        target_layer = self.fc1#self.graph.get_tensor_by_name("import/{}:0".format(layer))
-        t_score = tf.reduce_mean(target_layer)  # defining the optimization objective
+        t_score = -tf.reduce_mean(op)  # defining the optimization objective
         t_grad = tf.gradients(t_score, self.x)[0]  # behold the power of automatic differentiation!
 
-        stepsize = 1
-
-        img = img_noise.copy()
-        for i in range(50):
+        img = input.copy()
+        for i in range(n_iter):
             g, score = self.session.run([t_grad, t_score], {self.x: img, self.augment:0, self.dropout_rate:0})
             # normalizing the gradient, so the same step size should work
             g /= g.std() + 1e-8  # for different layers and networks
             img += g * stepsize
             print(score, end=' ')
         print(img.shape)
-        plt.imshow(img.reshape(512,512), cmap='gray')
+        return img.reshape(self.height, self.width)

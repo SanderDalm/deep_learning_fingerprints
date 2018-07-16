@@ -18,7 +18,7 @@ META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
-NUM_STEPS = 8001
+NUM_STEPS = 10
 DROPOUT = .5
 AUGMENT = 1
 DECAY = 1
@@ -114,4 +114,16 @@ plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=colors)
 # Visualize convolutional layers
 ########################################
 
-nn.visualize_layer('test', 'tost')
+layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
+len(layers)
+layer = layers[9].name
+
+target = nn.session.graph.get_tensor_by_name(layer + ':0')
+
+img_noise = np.random.uniform(size=(1, 512, 512, 1))
+
+img = nn.visualize_layer(input=img_noise,
+                   op=target[:, :, :, 8],
+                   n_iter=20,
+                   stepsize=1)
+plt.imshow(img, cmap='gray')
