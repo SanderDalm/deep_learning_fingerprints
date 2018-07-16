@@ -25,8 +25,7 @@ class BatchGenerator_Classification_NFI:
                                   'PLAIN_ARCH',
                                   'PLAIN_WHORL',
                                   'RIGHT_COMPOSITE_WHORL',
-                                  'RIGHT_PLAIN_LOOP',
-                                  'SPECIAL'
+                                  'RIGHT_PLAIN_LOOP'
                                   ]
 
         self.filenames, self.label_dict_one_hot = self.parse_data()
@@ -78,15 +77,14 @@ class BatchGenerator_Classification_NFI:
         for _ in range(batch_size):
 
             filename = np.random.choice(filenames)
+            randint = np.random.choice([1, 2, 3, 4, 5, 6, 7, -1])
 
-            if include_aug: # Include augmented samples
-                randint = np.random.choice([1, 2, 3])
+            if include_aug and randint > 0: # Include augmented samples
                 image = np.load(self.path + '/Aug{}/'.format(randint) + filename + '.npy')
                 filename = filename.replace('.npy', '')  # strip .npy for label lookup later
-            else: # Read original files only
+            else: # Read original file
                 image = imread(self.path+'/BMP/'+filename)
                 image = rgb2gray(image)
-
 
             if self.height != 512 or self.width != 512:
                 image = imresize(image, [self.height, self.width])

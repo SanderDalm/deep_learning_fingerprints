@@ -31,16 +31,16 @@ for aug_number in [1, 2, 3, 4, 5, 6, 7]:
             os.makedirs(DATAPATH + '/Aug{}'.format(aug_number))
         np.save(DATAPATH+'/Aug{}/{}'.format(aug_number, filename.split('/')[-1]), aug)
 
-# import matplotlib.pyplot as plt
-# filename = images[0]
-# orig = rgb2gray(imread(filename))
-# plt.imshow(orig, cmap='gray')
-#
-#
-# aug = augment_fingerprint(orig)
-# plt.imshow(aug, cmap='gray')
-#
-# aug1 = np.load(filename.replace('BMP', 'Aug1')+'.npy')
-# aug2 = np.load(filename.replace('BMP', 'Aug2')+'.npy')
-# aug3 = np.load(filename.replace('BMP', 'Aug3')+'.npy')
-# plt.imshow(np.concatenate([orig, aug1, aug2, aug3]), cmap='gray')
+import matplotlib.pyplot as plt
+filename = images[0]
+orig = rgb2gray(imread(filename))
+plt.imshow(orig, cmap='gray')
+
+
+aug = augment_fingerprint(orig)
+plt.imshow(aug, cmap='gray')
+
+aug1 = np.load(filename.replace('BMP', 'Aug1')+'.npy')
+aug2 = np.load(filename.replace('BMP', 'Aug2')+'.npy')
+aug3 = np.load(filename.replace('BMP', 'Aug3')+'.npy')
+plt.imshow(np.concatenate([orig, aug1, aug2, aug3]), cmap='gray')
