@@ -21,15 +21,15 @@ class NeuralNet_Classification:
 
         # Standardization and augmentation
         self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
-        self.cnn_input = tf.cond(self.augment > 0, lambda: augment(self.x_standardized), lambda: self.x_standardized)
+        self.cnn_input = self.x_standardized#tf.cond(self.augment > 0, lambda: augment(self.x_standardized), lambda: self.x_standardized)
 
         # Run the network
         self.cnn_output = CNN(self.cnn_input, self.dropout_rate)
 
-        self.fc1 = Dense(self.cnn_output, 256, tf.nn.relu)
+        self.fc1 = Dense(self.cnn_output, 1024, tf.nn.relu)
         self.fc1 = tf.layers.dropout(inputs=self.fc1, rate=self.dropout_rate)
 
-        self.fc2 = Dense(self.fc1, 256, tf.nn.relu)
+        self.fc2 = Dense(self.fc1, 1024, tf.nn.relu)
         self.logits = Dense(self.fc2, categories, None)
         self.prediction = tf.nn.softmax(self.logits)
 
@@ -118,3 +118,28 @@ class NeuralNet_Classification:
     def load_weights(self, path):
         self.saver.restore(self.session, path)
         print('Weights loaded.')
+
+
+    def visualize_layer(self, layer, channel):
+
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        # start with a gray image with a little noise
+        img_noise = np.random.uniform(size=(1, 512, 512, 1))
+
+        target_layer = self.fc1#self.graph.get_tensor_by_name("import/{}:0".format(layer))
+        t_score = tf.reduce_mean(target_layer)  # defining the optimization objective
+        t_grad = tf.gradients(t_score, self.x)[0]  # behold the power of automatic differentiation!
+
+        stepsize = 1
+
+        img = img_noise.copy()
+        for i in range(50):
+            g, score = self.session.run([t_grad, t_score], {self.x: img, self.augment:0, self.dropout_rate:0})
+            # normalizing the gradient, so the same step size should work
+            g /= g.std() + 1e-8  # for different layers and networks
+            img += g * stepsize
+            print(score, end=' ')
+        print(img.shape)
+        plt.imshow(img.reshape(512,512), cmap='gray')

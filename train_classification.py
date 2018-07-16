@@ -21,7 +21,7 @@ BATCH_SIZE = 32
 NUM_STEPS = 8001
 DROPOUT = .5
 AUGMENT = 1
-DECAY = .9997
+DECAY = 1
 
 #bg_anguli = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
 #bg_nist = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
@@ -77,9 +77,6 @@ get_acc(bg, 'val')
 #get_acc(bg_anguli, 'train')
 #get_acc(bg_anguli, 'val')
 
-
-
-
 ########################################
 # Plot embeddings with t-sne.
 ########################################
@@ -111,3 +108,10 @@ bg.label_dict
 colors = [color_dict[x] for x in labels]
 
 plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=colors)
+
+
+########################################
+# Visualize convolutional layers
+########################################
+
+nn.visualize_layer('test', 'tost')

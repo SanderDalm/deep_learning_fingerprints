@@ -75,7 +75,7 @@ def augment(images):
 # tf.enable_eager_execution()
 #
 # from os.path import join
-# ##from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
+# #from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
 # #from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
 # from batch_generators.batch_generator_classification_NFI import BatchGenerator_Classification_NFI
 # import matplotlib.pyplot as plt
