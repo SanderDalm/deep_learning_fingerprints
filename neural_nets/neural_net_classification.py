@@ -21,7 +21,7 @@ class NeuralNet_Classification:
 
         # Standardization and augmentation
         self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
-        self.cnn_input = self.x_standardized#tf.cond(self.augment > 0, lambda: augment(self.x_standardized), lambda: self.x_standardized)
+        self.cnn_input = self.x_standardized #tf.cond(self.augment > 0, lambda: augment(self.x_standardized), lambda: self.x_standardized)
 
         # Run the network
         self.cnn_output = CNN(self.cnn_input, self.dropout_rate)
@@ -118,20 +118,3 @@ class NeuralNet_Classification:
     def load_weights(self, path):
         self.saver.restore(self.session, path)
         print('Weights loaded.')
-
-
-    def visualize_layer(self, op, input, n_iter, stepsize):
-
-        # start with a gray image with a little noise
-        t_score = -tf.reduce_mean(op)  # defining the optimization objective
-        t_grad = tf.gradients(t_score, self.x)[0]  # behold the power of automatic differentiation!
-
-        img = input.copy()
-        for i in range(n_iter):
-            g, score = self.session.run([t_grad, t_score], {self.x: img, self.augment:0, self.dropout_rate:0})
-            # normalizing the gradient, so the same step size should work
-            g /= g.std() + 1e-8  # for different layers and networks
-            img += g * stepsize
-            print(score, end=' ')
-        print(img.shape)
-        return img.reshape(self.height, self.width)

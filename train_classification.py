@@ -37,7 +37,7 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           lr=.0001,
                           decay=DECAY)
 
-nn.load_weights('models/neural_net8000.ckpt')
+nn.load_weights('models/backup_97_procent_acc/neural_net8000.ckpt')
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)
@@ -55,7 +55,7 @@ def get_acc(bg, train_val):
 
     samples = 0
     correct = 0
-    for i in range(100):
+    for i in range(150):
         if train_val == 'train':
             x, y = bg.generate_train_batch(32)
         if train_val == 'val':
@@ -86,7 +86,7 @@ def get_embeddings(bg):
     embeddings = []
     labels = []
 
-    for i in range(120):
+    for i in range(30):
         x, y = bg.generate_val_batch(32)
 
         for img, label in zip(x, y):
@@ -114,6 +114,21 @@ plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=colors)
 # Visualize convolutional layers
 ########################################
 
+import tensorflow as tf
+
+def visualize_layer(nn, op, input, n_iter, stepsize):
+    t_score = -tf.reduce_mean(op)
+    t_grad = tf.gradients(t_score, nn.x)[0]
+
+    img = input.copy()
+    for i in range(n_iter):
+        g, score = nn.session.run([t_grad, t_score], {nn.x: img, nn.augment: 0, nn.dropout_rate: 0})
+        g /= g.std() + 1e-8
+        img += g * stepsize
+        print(score, end=' ')
+    return img.reshape(nn.height, nn.width)
+
+
 layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
 
 for layer in layers[0:1]:
@@ -123,7 +138,7 @@ for layer in layers[0:1]:
 
     num_channels = target.shape.as_list()[3]
 
-    num_rows = int(np.sqrt(num_channels))
+    num_rows = int(np.sqrt(num_channels))+1
     num_cols = num_rows
 
     fig, axs = plt.subplots(num_rows, num_cols, facecolor='w', edgecolor='k')
@@ -133,10 +148,10 @@ for layer in layers[0:1]:
     for channel in range(num_channels):
         print(channel)
         img_noise = np.random.uniform(size=(1, 512, 512, 1))
-        img = nn.visualize_layer(input=img_noise,
-                           op=target[:, :, :, channel],
-                           n_iter=20,
-                           stepsize=1)
+        img = visualize_layer(nn=nn,
+                              input=img_noise.copy(),
+                              op=target[:, :, :, channel],
+                              n_iter=20,
+                              stepsize=1)
 
-        axs[channel].imshow(img, cmap='gray')
-        axs[channel].set_title(layername + ':' + str(channel))
+        axs[channel].imshow(img[:128, :128], cmap='gray')
