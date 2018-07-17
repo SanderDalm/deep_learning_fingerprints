@@ -20,11 +20,9 @@ class BatchGenerator_Classification_NFI:
         self.detect_special_patterns = detect_special_patterns
         if self.detect_special_patterns:
             self.custom_labels = [
-                                  'LEFT_COMPOSITE_WHORL',
                                   'LEFT_PLAIN_LOOP',
                                   'PLAIN_ARCH',
                                   'PLAIN_WHORL',
-                                  'RIGHT_COMPOSITE_WHORL',
                                   'RIGHT_PLAIN_LOOP'
                                   ]
 
