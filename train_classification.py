@@ -117,10 +117,33 @@ source = ColumnDataSource(data=dict(
     x=embeddings_tsne[:, 0],
     y=embeddings_tsne[:, 1],
     desc=filenames,
-    color=[Category20[7][x] for x in labels]
+    color=[Category20[7][x] for x in labels],
+    imgs=['file://'+join(DATAPATH, 'BMP', filename) for filename in filenames]
     ))
 
 TOOLTIPS = [("desc", "@desc")]
+TOOLTIPS = """
+    <div>
+        <div>
+            <img
+                src="@imgs" height="128" alt="@imgs" width="128"
+                style="float: left; margin: 0px 15px 15px 0px;"
+                border="2"
+            ></img>
+        </div>
+        <div>
+            <span style="font-size: 17px; font-weight: bold;">@desc</span>
+            <span style="font-size: 15px; color: #966;">[$index]</span>
+        </div>
+        <div>
+            <span>@fonts{safe}</span>
+        </div>
+        <div>
+            <span style="font-size: 15px;">Location</span>
+            <span style="font-size: 10px; color: #696;">($x, $y)</span>
+        </div>
+    </div>
+"""
 p = figure(plot_width=1200, plot_height=800, tooltips=TOOLTIPS,
            title="Mouse over the dots")
 
