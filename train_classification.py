@@ -30,7 +30,6 @@ bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, M
 nn = NeuralNet_Classification(HEIGHT, WIDTH, len(bg.label_dict))
 nn.load_weights('models/backup_97_procent_acc/neural_net8000.ckpt')
 
-
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           batchgen=bg,
                           batch_size=BATCH_SIZE,
@@ -56,7 +55,7 @@ def get_acc(bg, train_val):
 
     samples = 0
     correct = 0
-    for i in range(50):
+    for i in range(150):
         if train_val == 'train':
             x, y = bg.generate_train_batch(32)
         if train_val == 'val':
@@ -101,12 +100,6 @@ from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA, NMF
 tsne = TSNE(perplexity=20)#NMF(n_components=2)#PCA(n_components=2)#
 embeddings_tsne = tsne.fit_transform(embeddings)
-
-color_dict = {0: 'b', 1: 'g', 2: 'r', 3: 'c', 4: 'm', 5: 'y', 6: 'k'}
-bg.label_dict
-colors = [color_dict[x] for x in labels]
-
-plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=colors)
 
 # Bokeh versie
 from bokeh.plotting import figure, output_file, show, ColumnDataSource
