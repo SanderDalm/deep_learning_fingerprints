@@ -14,20 +14,22 @@ import config
 ########################################0
 
 DATAPATH = join(config.datadir, 'NFI')
-META_FILE = 'CLASSIFICATION-extended pattern set.pet' # 'GeneralPatterns.txt'#
+META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
-NUM_STEPS = 8001
+NUM_STEPS = 60001
 DROPOUT = .5
 AUGMENT = 1
 DECAY = 1
 
 #bg = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
 #bg = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
-bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=True)
+bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=False)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, len(bg.label_dict))
+nn.load_weights('models/backup_97_procent_acc/neural_net8000.ckpt')
+
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           batchgen=bg,
@@ -37,7 +39,6 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           lr=.0001,
                           decay=DECAY)
 
-nn.load_weights('models/backup_97_procent_acc/neural_net8000.ckpt')
 
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)
@@ -81,22 +82,24 @@ def get_embeddings(bg):
 
     embeddings = []
     labels = []
+    filenames = []
 
     for i in range(30):
-        x, y = bg.generate_val_batch(32)
+        x, y, filenames_batch = bg.generate_val_batch(32, return_filenames=True)
+        filenames.extend(filenames_batch)
 
         for img, label in zip(x, y):
             embedding = nn.get_embedding(img)
             embeddings.append(embedding)
             labels.append(np.argmax(label))
 
-    return np.array(embeddings), np.array(labels)
+    return np.array(embeddings), np.array(labels), filenames
 
-embeddings, labels = get_embeddings(bg)
+embeddings, labels, filenames = get_embeddings(bg)
 
 from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
-tsne = TSNE(perplexity=20)#PCA(n_components=2)
+from sklearn.decomposition import PCA, NMF
+tsne = TSNE(perplexity=20)#NMF(n_components=2)#PCA(n_components=2)#
 embeddings_tsne = tsne.fit_transform(embeddings)
 
 color_dict = {0: 'b', 1: 'g', 2: 'r', 3: 'c', 4: 'm', 5: 'y', 6: 'k'}
@@ -105,6 +108,26 @@ colors = [color_dict[x] for x in labels]
 
 plt.scatter(embeddings_tsne[:, 0], embeddings_tsne[:, 1], c=colors)
 
+# Bokeh versie
+from bokeh.plotting import figure, output_file, show, ColumnDataSource
+from bokeh.palettes import Category20
+
+output_file("toolbar.html")
+source = ColumnDataSource(data=dict(
+    x=embeddings_tsne[:, 0],
+    y=embeddings_tsne[:, 1],
+    desc=filenames,
+    color=[Category20[7][x] for x in labels]
+    ))
+
+TOOLTIPS = [("desc", "@desc")]
+p = figure(plot_width=1200, plot_height=800, tooltips=TOOLTIPS,
+           title="Mouse over the dots")
+
+
+p.circle('x', 'y', size=10, color='color', source=source)
+
+show(p)
 
 ########################################
 # Visualize convolutional layers
@@ -127,7 +150,7 @@ def visualize_layer(nn, op, input, n_iter, stepsize):
 
 layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
 
-for layer in layers[0:1]:
+for layer in layers[8:9]:
     layername = layer.name
     print(layername)
     target = nn.session.graph.get_tensor_by_name(layername + ':0')
@@ -150,4 +173,9 @@ for layer in layers[0:1]:
                               n_iter=20,
                               stepsize=1)
 
-        axs[channel].imshow(img[:128, :128], cmap='gray')
+        axs[channel].imshow(img[:64, :64], cmap='gray')
+
+
+########################################
+# Laplacian pyramid smoothing
+########################################
