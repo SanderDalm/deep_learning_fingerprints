@@ -1,4 +1,6 @@
 import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
 
 def Dense(x, units, activation):
     return tf.layers.dense(inputs=x,
@@ -70,6 +72,49 @@ def augment(images):
     return images
 
 
+def create_visualisation(nn, layer_number, input_img):
+
+    def visualize_layer(nn, op, input, n_iter, stepsize):
+        t_score = -tf.reduce_mean(op)
+        t_grad = tf.gradients(t_score, nn.x)[0]
+
+        img = input.copy()
+        for i in range(n_iter):
+            g, score = nn.session.run([t_grad, t_score], {nn.x: img, nn.augment: 0, nn.dropout_rate: 0})
+            g /= g.std() + 1e-8
+            img += g * stepsize
+            print(score, end=' ')
+        if len(img.shape) == 3:
+            return img.reshape(nn.height, nn.width)
+        if len(img.shape) == 4:
+            return img[:, :, :, 0].reshape(nn.height, nn.width)
+
+    layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
+    layer = layers[layer_number]
+    layername = layer.name
+    print(layername)
+    target = nn.session.graph.get_tensor_by_name(layername + ':0')
+
+    num_channels = target.shape.as_list()[3]
+
+    num_rows = int(np.sqrt(num_channels)) + 1
+    num_cols = num_rows
+
+    fig, axs = plt.subplots(num_rows, num_cols, facecolor='w', edgecolor='k')
+    fig.subplots_adjust(hspace=.001, wspace=.001)
+    axs = axs.ravel()
+
+    for channel in range(num_channels):
+        print(channel)
+        img = visualize_layer(nn=nn,
+                              input=input_img.copy(),
+                              op=target[:, :, :, channel],
+                              n_iter=20,
+                              stepsize=1)
+        axs[channel].imshow(img, cmap='gray')
+    plt.show()
+
+
 # Test augmentation
 #
 # tf.enable_eager_execution()
@@ -78,9 +123,6 @@ def augment(images):
 # #from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
 # #from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
 # from batch_generators.batch_generator_classification_NFI import BatchGenerator_Classification_NFI
-# import matplotlib.pyplot as plt
-# import numpy as np
-#
 # import config
 # DATAPATH = join(config.datadir, 'NFI')
 # META_FILE = 'GeneralPatterns.txt'

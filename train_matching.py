@@ -4,17 +4,18 @@ import matplotlib.pyplot as plt
 from neural_nets.neural_net_matching import NeuralNet_Matching
 from batch_generators.batch_generator_matching_nist import BatchGenerator_Matching_NIST
 from batch_generators.batch_generator_matching_anguli import BatchGenerator_Matching_Anguli
+from neural_nets.tf_utils import create_visualisation
 import config
 
 ########################################
 # Set globals
 ########################################
 
-HEIGHT = 400
-WIDTH = 275
+HEIGHT = 512
+WIDTH = 512
 BATCH_SIZE = 32
-NUM_STEPS = 3001
-
+NUM_STEPS = 1001
+DROPOUT_RATE = 0.5
 
 ########################################
 # Train model
@@ -24,14 +25,14 @@ NUM_STEPS = 3001
 bg_nist = BatchGenerator_Matching_NIST(path=config.datadir+'/sd04/png_txt/', height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Matching(height=HEIGHT, width=WIDTH, network_type='duos')
-
+nn.load_weights('models/neural_net1000.ckpt')
 # Record: conv/conv/dropout/pool architectuur, .5 dropout, augment false, lr.0001, decay 1, 900 stappen, 93% acc, 'models/neural_net899.ckpt'
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           batchgen=bg_nist,
                           batch_size=BATCH_SIZE,
-                          dropout_rate=0.5,
-                          augment=1,
+                          dropout_rate=DROPOUT_RATE,
+                          augment=0,
                           lr=.0001,
                           decay=1)
 
@@ -39,8 +40,6 @@ loss, val_loss = nn.train(num_steps=NUM_STEPS,
 plt.plot(loss, color='b', alpha=.7)
 plt.plot(val_loss, color='g', alpha=.7)
 plt.show()
-
-nn.load_weights('models/neural_net899.ckpt')
 
 ########################################
 # Visualize embedding distances
@@ -141,3 +140,13 @@ get_acc(bg_nist, 'val')
 #print('Anguli')
 #et_acc(bg_anguli, 'train')
 #et_acc(bg_anguli, 'val')
+
+########################################
+# Visualize convolutional layers
+########################################
+
+layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
+for index, l in enumerate(layers):
+    print(index, l.name)
+input_img = np.random.uniform(size=(1, HEIGHT, WIDTH, 3))
+create_visualisation(nn=nn, layer_number=0, input_img=input_img)

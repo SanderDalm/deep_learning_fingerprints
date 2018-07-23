@@ -27,13 +27,13 @@ class NeuralNet_Matching:
 
         # Standardization and augmentation
         self.anchor = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.anchor)
-        self.anchor = tf.cond(self.augment > 0, lambda: augment(self.anchor), lambda: self.anchor)
+        #self.anchor = tf.cond(self.augment > 0, lambda: augment(self.anchor), lambda: self.anchor)
 
         self.pos = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.pos)
-        self.pos = tf.cond(self.augment > 0, lambda: augment(self.pos), lambda: self.pos)
+        #self.pos = tf.cond(self.augment > 0, lambda: augment(self.pos), lambda: self.pos)
 
         self.neg = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.neg)
-        self.neg = tf.cond(self.augment > 0, lambda: augment(self.neg), lambda: self.neg)
+        #self.neg = tf.cond(self.augment > 0, lambda: augment(self.neg), lambda: self.neg)
 
 
         # Run the network
@@ -155,3 +155,18 @@ class NeuralNet_Matching:
     def load_weights(self, path):
         self.saver.restore(self.session, path)
         print('Weights loaded.')
+
+
+    def get_embedding(self, image):
+
+        x = np.concatenate([image, image, image],
+                           axis=2)  # The second image2 is a placeholder because the network expects triplets
+        x = x.reshape([1, self.height, self.width, 3])
+        feed_dict = {
+            self.x: x,
+            self.dropout_rate: 0,
+            self.augment: 0
+        }
+        embedding = self.session.run([self.anchor_embedding], feed_dict=feed_dict)
+
+        return embedding[0][0]

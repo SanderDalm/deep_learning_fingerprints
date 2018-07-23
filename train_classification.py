@@ -7,6 +7,7 @@ from batch_generators.batch_generator_classification_nist import BatchGenerator_
 from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
 from batch_generators.batch_generator_classification_NFI import BatchGenerator_Classification_NFI
 from neural_nets.neural_net_classification import NeuralNet_Classification
+from neural_nets.tf_utils import create_visualisation
 import config
 
 ########################################
@@ -18,7 +19,7 @@ META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
-NUM_STEPS = 60001
+NUM_STEPS = 40001
 DROPOUT = .5
 AUGMENT = 1
 DECAY = 1
@@ -83,7 +84,7 @@ def get_embeddings(bg):
     labels = []
     filenames = []
 
-    for i in range(30):
+    for i in range(300):
         x, y, filenames_batch = bg.generate_val_batch(32, return_filenames=True)
         filenames.extend(filenames_batch)
 
@@ -114,7 +115,6 @@ source = ColumnDataSource(data=dict(
     imgs=['file://'+join(DATAPATH, 'BMP', filename) for filename in filenames]
     ))
 
-TOOLTIPS = [("desc", "@desc")]
 TOOLTIPS = """
     <div>
         <div>
@@ -149,48 +149,9 @@ show(p)
 # Visualize convolutional layers
 ########################################
 
-import tensorflow as tf
-
-def visualize_layer(nn, op, input, n_iter, stepsize):
-    t_score = -tf.reduce_mean(op)
-    t_grad = tf.gradients(t_score, nn.x)[0]
-
-    img = input.copy()
-    for i in range(n_iter):
-        g, score = nn.session.run([t_grad, t_score], {nn.x: img, nn.augment: 0, nn.dropout_rate: 0})
-        g /= g.std() + 1e-8
-        img += g * stepsize
-        print(score, end=' ')
-    return img.reshape(nn.height, nn.width)
-
-
 layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
-
-for layer in layers[8:9]:
-    layername = layer.name
-    print(layername)
-    target = nn.session.graph.get_tensor_by_name(layername + ':0')
-
-    num_channels = target.shape.as_list()[3]
-
-    num_rows = int(np.sqrt(num_channels))+1
-    num_cols = num_rows
-
-    fig, axs = plt.subplots(num_rows, num_cols, facecolor='w', edgecolor='k')
-    fig.subplots_adjust(hspace=.001, wspace=.001)
-    axs = axs.ravel()
-
-    for channel in range(num_channels):
-        print(channel)
-        img_noise = np.random.uniform(size=(1, 512, 512, 1))
-        img = visualize_layer(nn=nn,
-                              input=img_noise.copy(),
-                              op=target[:, :, :, channel],
-                              n_iter=20,
-                              stepsize=1)
-
-        axs[channel].imshow(img[:64, :64], cmap='gray')
-
+input_img = np.random.uniform(size=(1, HEIGHT, WIDTH, 1))
+create_visualisation(nn=nn, layer_number=4, input_img=input_img)
 
 ########################################
 # Laplacian pyramid smoothing
