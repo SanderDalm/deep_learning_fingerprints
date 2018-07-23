@@ -25,7 +25,7 @@ DROPOUT_RATE = 0.5
 bg_nist = BatchGenerator_Matching_NIST(path=config.datadir+'/sd04/png_txt/', height=HEIGHT, width=WIDTH)
 
 nn = NeuralNet_Matching(height=HEIGHT, width=WIDTH, network_type='duos')
-nn.load_weights('models/neural_net1000.ckpt')
+nn.load_weights('models/matching/neural_net1000.ckpt')
 # Record: conv/conv/dropout/pool architectuur, .5 dropout, augment false, lr.0001, decay 1, 900 stappen, 93% acc, 'models/neural_net899.ckpt'
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
@@ -149,4 +149,4 @@ layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
 for index, l in enumerate(layers):
     print(index, l.name)
 input_img = np.random.uniform(size=(1, HEIGHT, WIDTH, 3))
-create_visualisation(nn=nn, layer_number=0, input_img=input_img)
+create_visualisation(nn=nn, layer_number=2, input_img=input_img)

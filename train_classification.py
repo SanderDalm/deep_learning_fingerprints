@@ -3,6 +3,8 @@ from os.path import join
 import numpy as np
 import matplotlib.pyplot as plt
 
+from scipy.misc import imread, imresize
+from skimage.color import rgb2gray
 from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
 from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
 from batch_generators.batch_generator_classification_NFI import BatchGenerator_Classification_NFI
@@ -29,7 +31,7 @@ DECAY = 1
 bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=False)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, len(bg.label_dict))
-nn.load_weights('models/backup_97_procent_acc/neural_net8000.ckpt')
+nn.load_weights('models/classificatie/neural_net8000.ckpt')
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           batchgen=bg,
@@ -82,18 +84,17 @@ def get_embeddings(bg):
 
     embeddings = []
     labels = []
-    filenames = []
 
-    for i in range(300):
-        x, y, filenames_batch = bg.generate_val_batch(32, return_filenames=True)
-        filenames.extend(filenames_batch)
+    for filename in bg.filenames_val:
+        img = imread(bg.path+'/BMP/'+filename)
+        img = rgb2gray(img)
+        if bg.height != 512 or bg.width != 512:
+            img = imresize(img, [bg.height, bg.width])
+        embedding = nn.get_embedding(img)
+        embeddings.append(embedding)
+        labels.append(np.argmax(bg.label_dict_one_hot[filename]))
 
-        for img, label in zip(x, y):
-            embedding = nn.get_embedding(img)
-            embeddings.append(embedding)
-            labels.append(np.argmax(label))
-
-    return np.array(embeddings), np.array(labels), filenames
+    return np.array(embeddings), np.array(labels), bg.filenames_val
 
 embeddings, labels, filenames = get_embeddings(bg)
 
@@ -151,7 +152,7 @@ show(p)
 
 layers = [op for op in nn.session.graph.get_operations() if op.type == 'Conv2D']
 input_img = np.random.uniform(size=(1, HEIGHT, WIDTH, 1))
-create_visualisation(nn=nn, layer_number=4, input_img=input_img)
+create_visualisation(nn=nn, layer_number=6, input_img=input_img)
 
 ########################################
 # Laplacian pyramid smoothing

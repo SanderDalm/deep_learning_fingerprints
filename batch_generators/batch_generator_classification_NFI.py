@@ -67,16 +67,14 @@ class BatchGenerator_Classification_NFI:
         return np.array(filenames), labels_one_hot
 
 
-    def generate_batch(self, batch_size, candidates, include_aug, return_filenames=False):
+    def generate_batch(self, batch_size, candidates, include_aug):
 
         x_batch = []
         y_batch = []
-        filenames = []
 
         for _ in range(batch_size):
 
             filename = np.random.choice(candidates)
-            filenames.append(filename)
             randint = np.random.choice([1, 2, 3, 4, 5, 6, 7, -1])
 
             if include_aug and randint > 0: # Include augmented samples
@@ -92,18 +90,14 @@ class BatchGenerator_Classification_NFI:
             x_batch.append(image)
             y_batch.append(self.label_dict_one_hot[filename])
 
-
-        if return_filenames:
-            return np.array(x_batch).reshape(batch_size, self.height, self.width, 1), np.array(y_batch), filenames
-        else:
-            return np.array(x_batch).reshape(batch_size, self.height, self.width, 1), np.array(y_batch)
+        return np.array(x_batch).reshape(batch_size, self.height, self.width, 1), np.array(y_batch)
 
 
-    def generate_train_batch(self, batch_size, return_filenames=False):
+    def generate_train_batch(self, batch_size):
 
-        return self.generate_batch(batch_size, self.filenames_train, self.include_aug, return_filenames)
+        return self.generate_batch(batch_size, self.filenames_train, self.include_aug)
 
 
-    def generate_val_batch(self, batch_size, return_filenames=False):
+    def generate_val_batch(self, batch_size):
 
-        return self.generate_batch(batch_size, self.filenames_val, False, return_filenames)
+        return self.generate_batch(batch_size, self.filenames_val, False)
