@@ -1,3 +1,4 @@
+from os.path import join
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -72,7 +73,7 @@ def augment(images):
     return images
 
 
-def create_visualisation(nn, layer_number, input_img):
+def visualize_layers(nn, layer_number, input_img):
 
     def visualize_layer(nn, op, input, n_iter, stepsize):
         t_score = -tf.reduce_mean(op)
@@ -115,18 +116,85 @@ def create_visualisation(nn, layer_number, input_img):
     plt.show()
 
 
+def visualize_embedding(bg, nn, datadir):
+    from scipy.misc import imread, imresize
+    from skimage.color import rgb2gray
+    from sklearn.manifold import TSNE
+    from bokeh.plotting import figure, output_file, show, ColumnDataSource
+    from bokeh.palettes import Category20
+
+    def get_embeddings(bg):
+
+        embeddings = []
+        labels = []
+
+        for filename in bg.filenames_val:
+            img = imread(bg.path + '/BMP/' + filename)
+            img = rgb2gray(img)
+            if bg.height != 512 or bg.width != 512:
+                img = imresize(img, [bg.height, bg.width])
+            embedding = nn.get_embedding(img)
+            embeddings.append(embedding)
+            labels.append(np.argmax(bg.label_dict_one_hot[filename]))
+
+        return np.array(embeddings), np.array(labels), bg.filenames_val
+
+    embeddings, labels, filenames = get_embeddings(bg)
+
+    tsne = TSNE(perplexity=20)
+    embeddings_tsne = tsne.fit_transform(embeddings)
+
+    output_file("toolbar.html")
+    source = ColumnDataSource(data=dict(
+        x=embeddings_tsne[:, 0],
+        y=embeddings_tsne[:, 1],
+        desc=filenames,
+        color=[Category20[7][x] for x in labels],
+        imgs=['file://' + join(datadir, 'BMP', filename) for filename in filenames]
+    ))
+
+    TOOLTIPS = """
+        <div>
+            <div>
+                <img
+                    src="@imgs" height="128" alt="@imgs" width="128"
+                    style="float: left; margin: 0px 15px 15px 0px;"
+                    border="2"
+                ></img>
+            </div>
+            <div>
+                <span style="font-size: 17px; font-weight: bold;">@desc</span>
+                <span style="font-size: 15px; color: #966;">[$index]</span>
+            </div>
+            <div>
+                <span>@fonts{safe}</span>
+            </div>
+            <div>
+                <span style="font-size: 15px;">Location</span>
+                <span style="font-size: 10px; color: #696;">($x, $y)</span>
+            </div>
+        </div>
+    """
+    p = figure(plot_width=1200, plot_height=800, tooltips=TOOLTIPS,
+               title="Mouse over the dots")
+
+    p.circle('x', 'y', size=10, color='color', source=source)
+
+    show(p)
+
 # Test augmentation
-#
+
 # tf.enable_eager_execution()
 #
 # from os.path import join
 # #from batch_generators.batch_generator_classification_anguli import BatchGenerator_Classification_Anguli
-# #from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
+# from batch_generators.batch_generator_classification_nist import BatchGenerator_Classification_NIST
 # from batch_generators.batch_generator_classification_NFI import BatchGenerator_Classification_NFI
 # import config
 # DATAPATH = join(config.datadir, 'NFI')
 # META_FILE = 'GeneralPatterns.txt'
 # bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, 'GeneralPatterns.txt'))
+# bg = BatchGenerator_Classification_NIST(path=config.datadir+'/sd04/png_txt/')
 #
 #
 # x, y = bg.generate_train_batch(1)
@@ -134,16 +202,16 @@ def create_visualisation(nn, layer_number, input_img):
 # np.max(x)
 #
 # x2 = augment(x)
+# x3 = augment(x)
+# x4 = augment(x)
 # np.min(x2)
 # np.max(x2)
 #
-# together = np.concatenate([x, x2], axis=1)
-# plt.imshow(together.reshape(1024, 512), cmap='gray')
+# together = np.concatenate([x.reshape(512,512), x2, x3, x4], axis=1)
+# plt.imshow(together.reshape(512, 2048), cmap='gray')
 # plt.show()
 #
-#
 # x2 = tf.image.resize_images(x, [299, 299])
-#
 #
 # plt.imshow(x.reshape(512, 512), cmap='gray')
 # plt.show()
