@@ -25,7 +25,8 @@ class BatchGenerator_Classification_NIST:
         file_list = glob(path + '/*' + '/*')
 
         ids = list(set([x[:-4].split('/')[-1] for x in file_list]))
-        ids.remove('Thumb')
+        if 'Thumb' in ids:
+            ids.remove('Thumb')
 
         images = []
         labels = []

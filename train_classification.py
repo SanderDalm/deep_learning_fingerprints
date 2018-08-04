@@ -1,4 +1,5 @@
 from os.path import join
+from glob import glob
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,22 +15,22 @@ import config
 # Set globals
 ########################################0
 
-DATAPATH = join(config.datadir, 'NFI')
+DATAPATH = join(config.datadir, 'sd04/png_txt')
 META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
-NUM_STEPS = 40001
+NUM_STEPS = 2001
 DROPOUT = .5
 AUGMENT = 1
 DECAY = 1
 
+bg = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH, n_train=3000)
 #bg = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
-#bg = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH)
-bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=False)
+#bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=False)
 
 nn = NeuralNet_Classification(HEIGHT, WIDTH, len(bg.label_dict))
-nn.load_weights('models/classificatie/neural_net8000.ckpt')
+#nn.load_weights('models/neural_net1000.ckpt')
 
 loss, val_loss = nn.train(num_steps=NUM_STEPS,
                           batchgen=bg,
@@ -56,7 +57,7 @@ def get_acc(bg, train_val):
 
     samples = 0
     correct = 0
-    for i in range(150):
+    for i in range(10):
         if train_val == 'train':
             x, y = bg.generate_train_batch(32)
         if train_val == 'val':
@@ -70,7 +71,6 @@ def get_acc(bg, train_val):
 
     print('{} acc: {}'.format(train_val, correct/samples))
 
-print('NFI')
 get_acc(bg, 'train')
 get_acc(bg, 'val')
 
@@ -78,7 +78,19 @@ get_acc(bg, 'val')
 # Plot embeddings with t-sne.
 ########################################
 
-visualize_embedding(bg, nn, DATAPATH)
+def get_label(filename):
+    label_path = filename.replace('.png', '.txt')
+    label_file = open(label_path)
+    for line in label_file.readlines():
+        if line.startswith('Class'):
+            label = line[7]
+    return label
+
+filenames = glob(DATAPATH + '/*' + '/*.png')
+filenames = [x for x in filenames if 'umb' not in x]
+labels = [get_label(x) for x in filenames]
+
+visualize_embedding(nn, bg, filenames, labels, limit=2000)
 
 ########################################
 # Visualize convolutional layers

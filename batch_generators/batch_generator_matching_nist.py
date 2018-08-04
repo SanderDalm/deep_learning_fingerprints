@@ -116,3 +116,46 @@ class BatchGenerator_Matching_NIST:
     def generate_val_duos(self, batch_size):
 
         return self.generate_duo_batch_with_labels(batch_size, self.sample_ids_val)
+#
+# H=400
+# W=275
+# bg = BatchGenerator_Matching_NIST(path='/home/sander/data/deep_learning_fingerprints/sd04/png_txt', height=H, width=W)
+#
+# batch = bg.generate_val_triplets(32)
+#
+# import matplotlib.pyplot as plt
+# batch.shape
+#
+# anchor=batch[0, :, :, 0].reshape(H, W)
+# # pos=batch[0, :, :, 1].reshape(H, W)
+# # neg=batch[0, :, :, 2].reshape(H, W)
+# # show = np.concatenate([anchor, pos, neg], axis=0)
+# # plt.imshow(show, cmap='gray')
+#
+#
+# np.mean(anchor)
+# plt.imshow(anchor, cmap='gray')
+# plt.show()
+#
+#
+# def augment(images):
+#
+#     noise = tf.random_normal(shape=tf.shape(images), mean=0.0, stddev=0.1,
+#                              dtype=tf.float32)
+#     images = tf.add(images, noise)
+#
+#     images = tf.map_fn(lambda img: tf.image.random_brightness(img, max_delta=1.), images)
+#     images = tf.map_fn(lambda img: tf.image.random_contrast(img, lower=0, upper=1), images)
+#
+#     return images
+#
+# import tensorflow as tf
+# tf.enable_eager_execution()
+# anchor = augment(anchor.reshape(1, H,W,1))
+#
+# anchor = np.array(anchor).reshape(H, W)
+#
+# np.mean(anchor)
+#
+# plt.imshow(anchor, cmap='gray')
+# plt.show()

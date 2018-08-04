@@ -116,30 +116,36 @@ def visualize_layers(nn, layer_number, input_img):
     plt.show()
 
 
-def visualize_embedding(bg, nn, datadir):
+def visualize_embedding(nn, bg, filenames, labels, limit=2000):
     from scipy.misc import imread, imresize
     from skimage.color import rgb2gray
     from sklearn.manifold import TSNE
     from bokeh.plotting import figure, output_file, show, ColumnDataSource
     from bokeh.palettes import Category20
 
-    def get_embeddings(bg):
+    def get_embeddings(nn, bg, filenames, labels, limit):
 
         embeddings = []
-        labels = []
 
-        for filename in bg.filenames_val:
-            img = imread(bg.path + '/BMP/' + filename)
+        for filename, label in zip(filenames[:limit], labels[:limit]):
+            img = imread(filename)
             img = rgb2gray(img)
             if bg.height != 512 or bg.width != 512:
                 img = imresize(img, [bg.height, bg.width])
             embedding = nn.get_embedding(img)
             embeddings.append(embedding)
-            labels.append(np.argmax(bg.label_dict_one_hot[filename]))
 
-        return np.array(embeddings), np.array(labels), bg.filenames_val
+        return np.array(embeddings), np.array(labels[:limit])
 
-    embeddings, labels, filenames = get_embeddings(bg)
+    embeddings, labels = get_embeddings(nn, bg, filenames, labels, limit)
+
+    # Tokenize labels
+    tokens = list(range(len(set(labels))))
+    n_values = np.max(tokens) + 1
+    label_types = sorted(list(set(labels)))
+    label_dict = {key: value for key, value in zip(label_types, tokens)}
+    colors = [label_dict[label] for label in labels]
+
 
     tsne = TSNE(perplexity=20)
     embeddings_tsne = tsne.fit_transform(embeddings)
@@ -149,8 +155,8 @@ def visualize_embedding(bg, nn, datadir):
         x=embeddings_tsne[:, 0],
         y=embeddings_tsne[:, 1],
         desc=filenames,
-        color=[Category20[7][x] for x in labels],
-        imgs=['file://' + join(datadir, 'BMP', filename) for filename in filenames]
+        color=[Category20[7][x] for x in colors],
+        imgs=['file://' + filename for filename in filenames]
     ))
 
     TOOLTIPS = """
