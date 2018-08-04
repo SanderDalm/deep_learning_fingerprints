@@ -27,13 +27,13 @@ class NeuralNet_Matching:
 
         # Standardization and augmentation
         self.anchor = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.anchor)
-        #self.anchor = tf.cond(self.augment > 0, lambda: augment(self.anchor), lambda: self.anchor)
+        self.anchor = tf.cond(self.augment > 0, lambda: augment(self.anchor), lambda: self.anchor)
 
         self.pos = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.pos)
-        #self.pos = tf.cond(self.augment > 0, lambda: augment(self.pos), lambda: self.pos)
+        self.pos = tf.cond(self.augment > 0, lambda: augment(self.pos), lambda: self.pos)
 
         self.neg = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.neg)
-        #self.neg = tf.cond(self.augment > 0, lambda: augment(self.neg), lambda: self.neg)
+        self.neg = tf.cond(self.augment > 0, lambda: augment(self.neg), lambda: self.neg)
 
 
         # Run the network

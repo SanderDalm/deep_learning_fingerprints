@@ -21,7 +21,7 @@ class NeuralNet_Classification:
 
         # Standardization and augmentation
         self.x_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img), self.x)
-        self.cnn_input = self.x_standardized #tf.cond(self.augment > 0, lambda: augment(self.x_standardized), lambda: self.x_standardized)
+        self.cnn_input = tf.cond(self.augment > 0, lambda: augment(self.x_standardized), lambda: self.x_standardized)
 
         # Run the network
         self.cnn_output = CNN(self.cnn_input, self.dropout_rate)
