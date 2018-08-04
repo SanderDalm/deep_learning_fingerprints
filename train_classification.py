@@ -16,7 +16,7 @@ import config
 ########################################0
 
 DATAPATH = join(config.datadir, 'sd04/png_txt')
-META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
+#META_FILE = 'GeneralPatterns.txt'#'CLASSIFICATION-extended pattern set.pet'
 HEIGHT = 512
 WIDTH = 512
 BATCH_SIZE = 32
