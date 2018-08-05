@@ -41,8 +41,3 @@ plt.show()
 aug = augment_fingerprint(orig)
 plt.imshow(aug, cmap='gray')
 plt.show()
-
-aug1 = np.load(filename.replace('BMP', 'Aug1')+'.npy')
-aug2 = np.load(filename.replace('BMP', 'Aug2')+'.npy')
-aug3 = np.load(filename.replace('BMP', 'Aug3')+'.npy')
-plt.imshow(np.concatenate([orig, aug1, aug2, aug3], axis=1), cmap='gray')
