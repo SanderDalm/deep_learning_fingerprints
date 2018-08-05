@@ -25,7 +25,13 @@ DROPOUT = .5
 AUGMENT = 1
 DECAY = 1
 
-bg = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH, n_train=3000)
+bg = BatchGenerator_Classification_NIST(path=DATAPATH, height=HEIGHT, width=WIDTH, include_aug=True, n_train=3000)
+
+x, y = bg.generate_train_batch(32)
+
+plt.imshow(x[0].reshape(512,512), cmap='gray')
+plt.show()
+
 #bg = BatchGenerator_Classification_Anguli(path=DATAPATH, height=HEIGHT, width=WIDTH)
 #bg = BatchGenerator_Classification_NFI(path=DATAPATH, meta_file=join(DATAPATH, META_FILE), include_aug=True, height=HEIGHT, width=WIDTH, detect_special_patterns=False)
 

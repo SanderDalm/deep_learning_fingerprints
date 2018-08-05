@@ -1,3 +1,4 @@
+import os
 from tqdm import tqdm
 from scipy.misc import imread, imresize
 import numpy as np
@@ -7,10 +8,11 @@ from glob import glob
 class BatchGenerator_Classification_NIST:
 
 
-    def __init__(self, path=None, height=512, width=512, n_train=3800):
+    def __init__(self, path=None, height=512, width=512, include_aug=False, n_train=3800):
 
         self.height = height
         self.width = width
+        self.include_aug = include_aug
 
         self.images, self.labels = self.parse_data(path)
         shuffled_indices = list(range(len(self.images)))
@@ -35,16 +37,12 @@ class BatchGenerator_Classification_NIST:
             image_path = [x for x in file_list if x.find(id) > -1 and x.endswith('png')][0]
             label_path = [x for x in file_list if x.find(id) > -1 and x.endswith('txt')][0]
 
-            img = imread(image_path)
-            if self.height != 512 or self.width != 512:
-                img = imresize(img, [self.height, self.width])
             label_file = open(label_path)
             for line in label_file.readlines():
                 if line.startswith('Class'):
                     label = line[7]
 
-            img = img / 255
-            images.append(img)
+            images.append(image_path)
             labels.append(label)
 
         # Tokenize labels
@@ -58,7 +56,7 @@ class BatchGenerator_Classification_NIST:
         return np.array(images), labels_one_hot
 
 
-    def generate_batch(self, batch_size, images, labels):
+    def generate_batch(self, batch_size, images, labels, include_aug):
 
         x_batch = []
         y_batch = []
@@ -66,7 +64,21 @@ class BatchGenerator_Classification_NIST:
         for _ in range(batch_size):
 
             index = np.random.choice(range(len(images)))
-            x_batch.append(images[index])
+
+            randint = np.random.choice([1, 2, 3, 4, -1])
+
+            if include_aug and randint > 0:  # Include augmented samples
+                path, filename = os.path.split(images[index])
+                path = os.path.join(path, 'Aug{}'.format(randint))
+                img = np.load(os.path.join(path, filename+'.npy'))
+            else:  # Read original file
+                img = imread(images[index])
+                img = img / 255
+
+            if self.height != 512 or self.width != 512:
+                img = imresize(img, [self.height, self.width])
+
+            x_batch.append(img)
             y_batch.append(labels[index])
 
         return np.array(x_batch).reshape(batch_size, self.height, self.width, 1), np.array(y_batch)
@@ -74,9 +86,9 @@ class BatchGenerator_Classification_NIST:
 
     def generate_train_batch(self, batch_size):
 
-        return self.generate_batch(batch_size, self.images_train, self.labels_train)
+        return self.generate_batch(batch_size, self.images_train, self.labels_train, self.include_aug)
 
 
     def generate_val_batch(self, batch_size):
 
-        return self.generate_batch(batch_size, self.images_val, self.labels_val)
+        return self.generate_batch(batch_size, self.images_val, self.labels_val, False)
